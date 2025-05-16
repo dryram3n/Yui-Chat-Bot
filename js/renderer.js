@@ -77,6 +77,8 @@ const yuiAvatarInitials = document.getElementById('yuiAvatarInitials'); // The s
 const yuiEmotionFace = document.getElementById('yuiEmotionFace'); // ADDED
 
 // New DOM Elements for UI enhancements
+const yuiStatusPanelTitle = document.getElementById('yuiStatusPanelTitle'); // ADDED
+const yuiEmotionPanelTitle = document.getElementById('yuiEmotionPanelTitle'); // ADDED
 const yuiMoodDisplay = document.getElementById('yuiMoodDisplay');
 const yuiLastActiveDisplay = document.getElementById('yuiLastActiveDisplay');
 const yuiMemoryCountDisplay = document.getElementById('yuiMemoryCountDisplay');
@@ -89,6 +91,8 @@ const clearChatButton = document.getElementById('clearChatButton');
 const totalInteractionsDisplay = document.getElementById('totalInteractionsDisplay');
 const relationshipMilestonesList = document.getElementById('relationshipMilestonesList');
 const userSentimentOverview = document.getElementById('userSentimentOverview');
+
+const dashboardViewTitle = document.getElementById('dashboardViewTitle'); // ADDED
 
 const chatTabButton = document.getElementById('chatTabButton');
 const dashboardTabButton = document.getElementById('dashboardTabButton');
@@ -117,6 +121,12 @@ const modelBackgroundTextarea = document.getElementById('modelBackgroundTextarea
 const modelSystemPromptTextarea = document.getElementById('modelSystemPromptTextarea');
 const revertToDefaultYuiButton = document.getElementById('revertToDefaultYuiButton');
 const chatHeaderTitle = document.getElementById('chatHeaderTitle'); // Ensure this is defined if not already
+
+// ADDED: User Preference Inputs in Model Settings
+const userPrefFoodInput = document.getElementById('userPrefFoodInput');
+const userPrefColorInput = document.getElementById('userPrefColorInput');
+const userPrefGameInput = document.getElementById('userPrefGameInput');
+const userPrefAnimeInput = document.getElementById('userPrefAnimeInput');
 
 let affectionChartInstance, trustChartInstance;
 let isProcessingMessage = false; // ADDED: Flag to prevent double message sending
@@ -230,6 +240,12 @@ async function initializeApp() {
     if (modelOccupationInput) modelOccupationInput.value = yuiData.occupation || DEFAULT_YUI_PERSONA.occupation;
     if (modelBackgroundTextarea) modelBackgroundTextarea.value = yuiData.backgroundSummary || DEFAULT_YUI_PERSONA.backgroundSummary;
     if (modelSystemPromptTextarea) modelSystemPromptTextarea.value = yuiData.customSystemPrompt || "";
+
+    // Populate User Preference Inputs in Model Settings
+    if (userPrefFoodInput) userPrefFoodInput.value = yuiData.userPreferences.food || '';
+    if (userPrefColorInput) userPrefColorInput.value = yuiData.userPreferences.color || '';
+    if (userPrefGameInput) userPrefGameInput.value = yuiData.userPreferences.games || '';
+    if (userPrefAnimeInput) userPrefAnimeInput.value = yuiData.userPreferences.anime || '';
 
     yuiNameDisplay.textContent = yuiData.characterName;
     if (chatHeaderTitle) chatHeaderTitle.textContent = yuiData.characterName;
@@ -427,6 +443,20 @@ function setupEventListeners() {
         if (yuiData.customSystemPrompt !== finalNewCustomSystemPrompt) {
             yuiData.customSystemPrompt = finalNewCustomSystemPrompt;
             modelChanged = true;
+        }
+
+        // ADDED: Read and update user preferences from Model Settings inputs
+        if (userPrefFoodInput) {
+            yuiData.userPreferences.food = userPrefFoodInput.value.trim() || null;
+        }
+        if (userPrefColorInput) {
+            yuiData.userPreferences.color = userPrefColorInput.value.trim() || null;
+        }
+        if (userPrefGameInput) {
+            yuiData.userPreferences.games = userPrefGameInput.value.trim() || null; // Ensure 'games' matches yuiData structure
+        }
+        if (userPrefAnimeInput) {
+            yuiData.userPreferences.anime = userPrefAnimeInput.value.trim() || null;
         }
 
         if (modelChanged) {
@@ -1798,10 +1828,21 @@ function getTopics(doc) {
 }
 
 function updateYuiProfileDisplay() {
-    yuiNameDisplay.textContent = yuiData.characterName;
-    if (chatHeaderTitle) chatHeaderTitle.textContent = yuiData.characterName; // Update chat header too
+    const characterName = yuiData.characterName || "Yui"; // Fallback to "Yui" if undefined
+
+    yuiNameDisplay.textContent = characterName;
+    if (chatHeaderTitle) chatHeaderTitle.textContent = characterName;
     yuiFriendshipStageDisplay.textContent = yuiData.friendshipStage;
-    yuiAvatarInitials.textContent = yuiData.characterName.substring(0,1).toUpperCase();
+    yuiAvatarInitials.textContent = characterName.substring(0,1).toUpperCase();
+
+    // Update dynamic titles
+    if (yuiStatusPanelTitle) yuiStatusPanelTitle.textContent = `${characterName}'s Status`;
+    if (yuiEmotionPanelTitle) yuiEmotionPanelTitle.textContent = `${characterName}'s Reaction`;
+    if (dashboardViewTitle) dashboardViewTitle.textContent = `${characterName}'s Dashboard`;
+
+
+    updateYuiStatusPanel(); // This updates mood, last active, memory count
+    // Update user profile panel (name and preferences)
     userNameDisplay.textContent = yuiData.userName; // Update user name in sidebar
 
     // Update Yui's Status Panel

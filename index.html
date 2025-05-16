@@ -20,7 +20,7 @@
                 <p id="yuiFriendshipStageDisplay">Stranger</p>
             </div>
             <div id="yuiStatusPanel" class="status-panel">
-                <h3>Yui's Status</h3>
+                <h3 id="yuiStatusPanelTitle">Yui's Status</h3>
                 <p>Mood: <span id="yuiMoodDisplay">-</span></p>
                 <p>Last Active: <span id="yuiLastActiveDisplay">-</span></p>
                 <p>Memories: <span id="yuiMemoryCountDisplay">0</span></p>
@@ -32,14 +32,14 @@
             </nav>
 
             <div id="yuiEmotionPanel" class="status-panel emotion-panel">
-                <h3>Yui's Reaction</h3>
+                <h3 id="yuiEmotionPanelTitle">Yui's Reaction</h3>
                 <div id="yuiEmotionFace" class="emotion-face">😐</div>
             </div>
 
             <div id="userProfilePanel" class="status-panel user-profile">
                 <h3>User Profile</h3>
                 <p>Name: <span id="userNameDisplay">User</span></p>
-                <h4>Preferences (Known by Yui):</h4>
+                <h4>Preferences:</h4>
                 <ul id="userPreferencesList">
                     <li>Food: <span id="userPrefFood">-</span></li>
                     <li>Color: <span id="userPrefColor">-</span></li>
@@ -67,7 +67,7 @@
 
             <!-- Dashboard View -->
             <div id="dashboardView" class="view">
-                <h1>Yui's Dashboard</h1>
+                <h1 id="dashboardViewTitle">Yui's Dashboard</h1>
                 <div class="dashboard-grid">
                     <div class="chart-container">
                         <h3>Affection Over Time</h3>
@@ -174,6 +174,25 @@
                         <label for="modelSystemPromptTextarea">Custom System Instructions:</label>
                         <textarea id="modelSystemPromptTextarea" rows="10" placeholder="Enter custom system prompt here, or leave blank for default Yui prompt..."></textarea>
                     </div>
+
+                    <h3>User's Preferences (Known by Model)</h3>
+                    <div class="settings-section">
+                        <label for="userPrefFoodInput">User's Favorite Food:</label>
+                        <input type="text" id="userPrefFoodInput" placeholder="e.g., Pizza">
+                    </div>
+                    <div class="settings-section">
+                        <label for="userPrefColorInput">User's Favorite Color:</label>
+                        <input type="text" id="userPrefColorInput" placeholder="e.g., Blue">
+                    </div>
+                    <div class="settings-section">
+                        <label for="userPrefGameInput">User's Favorite Game:</label>
+                        <input type="text" id="userPrefGameInput" placeholder="e.g., Stardew Valley">
+                    </div>
+                    <div class="settings-section">
+                        <label for="userPrefAnimeInput">User's Favorite Anime:</label>
+                        <input type="text" id="userPrefAnimeInput" placeholder="e.g., Attack on Titan">
+                    </div>
+
                     <div class="settings-section">
                         <button id="revertToDefaultYuiButton" class="secondary-button">Revert to Default Yui Persona</button>
                     </div>
