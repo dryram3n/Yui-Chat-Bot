@@ -77,7 +77,7 @@ These instructions are for setting up the project in a development environment l
 1.  **Clone the repository:**
     Open your terminal or command prompt and run:
     ```bash
-    git clone https://github.com/your-username/yui-chat-bot.git
+    git clone https://github.com/dryram3n/yui-chat-bot.git
     cd yui-chat-bot
     ```
     (Replace `https://github.com/dryram3n/yui-chat-bot.git` with the actual repository URL if you've forked it or it's hosted elsewhere.)
