@@ -1,0 +1,1110 @@
+/* Basic Reset & Font */
+body, html {
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', 'Roboto', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    height: 100vh;
+    overflow: hidden;
+    color: #ccc;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.app-container {
+    display: flex;
+    height: 100%;
+}
+
+/* --- Avatar Placeholder Styling --- */
+.avatar-placeholder {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #555, #333); /* Default gradient */
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 15px auto;
+    border: 3px solid #444;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    transition: background 0.4s ease, border-color 0.4s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.avatar-placeholder img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+#yuiAvatarInitials {
+    font-size: 3em;
+    font-weight: bold;
+    opacity: 0.7;
+    user-select: none;
+    z-index: 1; /* Make sure initials appear above the image if needed */
+}
+
+/* Add a placeholder animation for when image is loading */
+.avatar-loading {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, rgba(255,255,255,0.1), rgba(255,255,255,0.2), rgba(255,255,255,0.1));
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    z-index: 2;
+}
+
+@keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* --- Sidebar Enhancements --- */
+.sidebar {
+    width: 280px;
+    background-color: #25252c;
+    padding: 20px; /* MODIFIED */
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid #3a3a40;
+    box-shadow: 2px 0 15px rgba(0,0,0,0.1);
+}
+
+.profile-preview {
+    text-align: center;
+    margin-bottom: 30px; /* MODIFIED */
+}
+
+.profile-preview h2 {
+    color: #e0e0e0;
+    font-weight: 600;
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+.profile-preview p {
+    color: #888;
+    font-size: 0.9em;
+}
+
+.sidebar nav button {
+    display: block;
+    width: 100%;
+    padding: 14px 20px;
+    margin-bottom: 10px;
+    background-color: transparent;
+    color: #aaa;
+    border: none; /* Remove border, use border-left for active */
+    border-left: 3px solid transparent; /* Placeholder for active state */
+    border-radius: 8px; /* ADDED for consistency */
+    text-align: left;
+    cursor: pointer;
+    font-size: 1.05em;
+    transition: background-color 0.2s ease, color 0.2s ease, border-left-color 0.2s ease;
+}
+
+.sidebar nav button.active, .sidebar nav button:hover {
+    background-color: rgba(0, 120, 212, 0.15);
+    color: #00aeff;
+    border-left: 3px solid #00aeff;
+}
+
+/* Status Panel Styling (for Yui's status and User Profile) */
+.status-panel {
+    padding: 15px;
+    margin-top: 20px;
+    background-color: rgba(255, 255, 255, 0.03);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.status-panel h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    color: #00aeff;
+    font-size: 1.1em;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 5px;
+}
+
+.status-panel p, .status-panel li {
+    font-size: 0.85em;
+    color: #bbb;
+    margin-bottom: 5px;
+    line-height: 1.4;
+}
+.status-panel span {
+    color: #e0e0e0;
+    font-weight: 500;
+}
+
+.user-profile h4 {
+    font-size: 0.9em;
+    color: #00aeff;
+    margin-top: 15px;
+    margin-bottom: 8px;
+}
+
+.user-profile ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+/* --- Emotion Panel Styling --- */
+.emotion-panel {
+    text-align: center; /* Center the face */
+    padding: 15px;
+    margin-top: 20px;
+    background-color: rgba(255, 255, 255, 0.03); /* Consistent with other panels */
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.07); /* Consistent with other panels */
+}
+
+.emotion-panel h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    color: #00aeff; /* Consistent with other panel headers */
+    font-size: 1.1em;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 5px;
+}
+
+.emotion-face {
+    font-size: 3.5em; /* Make the emoji large */
+    line-height: 1;
+    padding: 10px 0;
+    color: #e0e0e0; /* Default color for the face */
+    transition: transform 0.2s ease-in-out, color 0.2s ease-in-out;
+}
+
+/* Theme-specific adjustments for emotion panel */
+body.theme-light-mode .emotion-panel {
+    background-color: #fdfdfd;
+    border-color: #eee;
+}
+body.theme-light-mode .emotion-panel h3 {
+    color: #0078d4;
+    border-bottom-color: #eee;
+}
+body.theme-light-mode .emotion-face {
+    color: #333;
+}
+
+body.theme-cyberpunk-dream .emotion-panel {
+    background-color: #241b47c0;
+    border: 1px solid #ff00ff;
+}
+body.theme-cyberpunk-dream .emotion-panel h3 {
+    color: #00f0ff;
+    border-bottom: 1px solid #3a2f6b;
+}
+body.theme-cyberpunk-dream .emotion-face {
+    color: #00f0ff;
+    text-shadow: 0 0 5px #00f0ff;
+}
+
+body.theme-oled-black .emotion-panel {
+    background-color: #0a0a0a;
+    border-color: #1f1f1f;
+}
+body.theme-oled-black .emotion-panel h3 {
+    color: #00bbff; /* Brighter for OLED */
+    border-bottom-color: #252525;
+}
+body.theme-oled-black .emotion-face {
+    color: #f0f0f0;
+}
+
+body.theme-ocean-vibe .emotion-panel {
+    background-color: #004866;
+    border-color: #005c80;
+}
+body.theme-ocean-vibe .emotion-panel h3 {
+    color: #ffc107; /* Accent color */
+    border-bottom-color: #006080;
+}
+body.theme-ocean-vibe .emotion-face {
+    color: #e0f7fa;
+}
+
+body.theme-retro-gaming .emotion-panel {
+    background-color: #1f4068;
+    border: 2px solid #00aaff;
+}
+body.theme-retro-gaming .emotion-panel h3 {
+    color: #ffc947;
+    border-bottom: 2px solid #e43f5a;
+    text-shadow: 1px 1px #1a1a2e;
+}
+body.theme-retro-gaming .emotion-face {
+    color: #00ff00; /* Green, like game text */
+    text-shadow: 1px 1px #1a1a2e;
+}
+
+body.theme-purple-haze .emotion-panel {
+    background-color: #4a0072;
+    border-color: #6a1b9a;
+}
+body.theme-purple-haze .emotion-panel h3 {
+    color: #f06292; /* Accent color */
+    border-bottom-color: #7b1fa2;
+}
+body.theme-purple-haze .emotion-face {
+    color: #e6e6fa;
+}
+
+body.theme-stoners-paradise .emotion-panel {
+    background-color: #3b4a20;
+    border-color: #556b2f;
+}
+body.theme-stoners-paradise .emotion-panel h3 {
+    color: #ffb300; /* Accent color */
+    border-bottom-color: #556b2f;
+}
+body.theme-stoners-paradise .emotion-face {
+    color: #e8f5e9;
+}
+
+body.theme-green-leaf-vibes .emotion-panel {
+    background-color: #2e7d32;
+    border-color: #43a047;
+}
+body.theme-green-leaf-vibes .emotion-panel h3 {
+    color: #ffeb3b; /* Accent color */
+    border-bottom-color: #43a047;
+}
+body.theme-green-leaf-vibes .emotion-face {
+    color: #e8f5e9;
+}
+
+/* --- Main Content Area --- */
+.main-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: #1c1c21;
+}
+
+.view {
+    display: none;
+    padding: 0; /* Remove padding here, add to children if needed */
+    flex-grow: 1;
+    overflow-y: auto;
+    flex-direction: column; /* Ensure views are column flex containers */
+}
+
+.view.active-view {
+    display: flex;
+}
+
+/* --- Chat View Enhancements --- */
+/* #chatView {
+    flex-direction: column; already set by .view.active-view
+} */
+
+.chat-header {
+    font-size: 1.6em;
+    color: #00aeff;
+    padding: 15px 20px; /* MODIFIED */
+    border-bottom: 1px solid #303035;
+    margin-bottom: 0;
+    font-weight: 600;
+    background-color: #25252c; /* Header background */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#clearChatButton {
+    font-size: 0.6em; /* Smaller font for the button */
+    padding: 6px 12px;
+    background-color: #444;
+    color: #ccc;
+    border: 1px solid #555;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    margin-left: 10px; /* ADDED for spacing */
+}
+#clearChatButton:hover {
+    background-color: #555;
+    color: #fff;
+}
+
+.chat-messages {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 20px; /* MODIFIED */
+    background-color: #1c1c21;
+}
+
+.message {
+    margin-bottom: 15px;
+    padding: 10px 18px;
+    border-radius: 20px;
+    max-width: 75%;
+    line-height: 1.5;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+    word-wrap: break-word; /* Ensure long words break */
+    position: relative; /* For timestamp positioning */
+}
+
+.message .timestamp {
+    font-size: 0.7em;
+    color: rgba(255, 255, 255, 0.5);
+    position: absolute;
+    bottom: -15px; /* Adjust as needed */
+    right: 10px;
+    opacity: 0.7;
+}
+
+.user-message .timestamp {
+    color: rgba(255, 255, 255, 0.7);
+}
+.yui-message .timestamp {
+    left: 10px;
+    right: auto;
+}
+
+.user-message {
+    background: linear-gradient(to right, #0078d4, #005a9e);
+    color: white;
+    margin-left: auto;
+    border-bottom-right-radius: 8px;
+}
+
+.yui-message {
+    background-color: #2b2b33;
+    color: #ddd;
+    margin-right: auto;
+    border-bottom-left-radius: 8px;
+}
+.yui-message.typing-indicator {
+    font-style: italic;
+    color: #888;
+}
+
+
+.system-info { /* For system messages like stage changes */
+    font-style: italic;
+    color: #777;
+    text-align: center;
+    font-size: 0.85em;
+    margin-bottom: 10px;
+    padding: 5px;
+}
+
+
+.chat-input-area {
+    display: flex;
+    padding: 15px 20px; /* MODIFIED */
+    border-top: 1px solid #303035;
+    background-color: #25252c;
+}
+
+.chat-input-area input {
+    flex-grow: 1;
+    padding: 10px 15px; /* MODIFIED */
+    border: 1px solid #3a3a40;
+    border-radius: 20px;
+    background-color: #1e1e1e;
+    color: #ccc;
+    margin-right: 10px;
+    font-size: 1em;
+}
+.chat-input-area input:focus {
+    outline: none;
+    border-color: #0078d4;
+    box-shadow: 0 0 0 2px rgba(0, 120, 212, 0.3);
+}
+
+.chat-input-area button {
+    padding: 10px 20px; /* MODIFIED */
+    background-color: #0078d4;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 1em;
+    transition: background-color 0.2s ease;
+}
+.chat-input-area button:hover {
+    background-color: #005a9e;
+}
+
+/* --- Settings & Dashboard View Enhancements --- */
+#settingsView, #dashboardView {
+    padding: 20px; /* MODIFIED */
+}
+
+#settingsView h1, #dashboardView h1 {
+    color: #00aeff;
+    border-bottom: 2px solid #303035;
+    padding-bottom: 10px;
+    margin-top: 0; /* Remove default h1 margin */
+    margin-bottom: 25px;
+    font-weight: 600;
+}
+.settings-section {
+    margin-bottom: 25px;
+}
+
+.settings-section label {
+    display: block;
+    margin-bottom: 8px;
+    color: #aaa;
+    font-weight: 500;
+}
+.settings-section input[type="password"],
+.settings-section input[type="text"],
+.settings-section select {
+    padding: 10px 15px; /* MODIFIED */
+    border-radius: 6px;
+    border: 1px solid #3a3a40;
+    background-color: #2d2d2d;
+    color: #ccc;
+    width: calc(100% - 32px); /* MODIFIED: 2*15px padding + 2*1px border */
+    margin-bottom: 10px; /* Space below input/select */
+    font-size: 0.95em;
+    box-sizing: border-box;
+}
+.settings-section input:focus, .settings-section select:focus {
+    outline: none;
+    border-color: #0078d4;
+    box-shadow: 0 0 0 2px rgba(0, 120, 212, 0.3);
+}
+
+.settings-section button { /* General button styling in settings */
+    padding: 10px 20px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-size: 0.95em;
+    transition: background-color 0.2s ease, opacity 0.2s ease;
+    margin-top: 5px; /* Space above button if it's after an input */
+}
+#saveApiKeyButton {
+    background-color: #0078d4;
+    color: white;
+    /* margin-left: 10px; /* If next to input, but now it's block */
+}
+#saveApiKeyButton:hover {
+    background-color: #005a9e;
+}
+
+.danger-button {
+    background-color: #d9534f;
+    color: white;
+}
+.danger-button:hover {
+    background-color: #c9302c;
+    opacity: 0.9;
+}
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 25px;
+    height: 100%;
+    overflow-y: auto;
+}
+.chart-container, .info-panel {
+    background-color: #2a2a30;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    height: 350px; /* Increased from 300px */
+    position: relative; /* For absolute positioning of canvas */
+    overflow: hidden;
+}
+.chart-container canvas {
+    position: absolute;
+    top: 50px; /* Account for the h3 header */
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100% !important;
+    height: calc(100% - 60px) !important; /* Account for padding and header */
+}
+.info-panel {
+    height: auto; /* Allow info panel to size naturally */
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+/* --- Theme: Light Mode --- */
+body.theme-light-mode {
+    color: #222;
+}
+body.theme-light-mode .sidebar {
+    background-color: #e8e8f0;
+    border-right: 1px solid #c5c5d0;
+    box-shadow: 2px 0 15px rgba(0,0,0,0.05);
+}
+body.theme-light-mode .avatar-placeholder {
+    background: linear-gradient(135deg, #ccc, #aaa);
+    border-color: #bbb;
+    color: #333;
+}
+body.theme-light-mode .profile-preview h2 { color: #333; }
+body.theme-light-mode .profile-preview p { color: #666; }
+
+body.theme-light-mode .sidebar nav button {
+    color: #555;
+}
+body.theme-light-mode .sidebar nav button.active,
+body.theme-light-mode .sidebar nav button:hover {
+    background-color: rgba(0, 100, 180, 0.1);
+    color: #0064b4;
+    border-left: 3px solid #0064b4;
+}
+body.theme-light-mode .main-content { background-color: #f4f4f8; }
+body.theme-light-mode .chat-header {
+    color: #0064b4;
+    border-bottom: 1px solid #d0d0d5;
+    background-color: #e8e8f0;
+}
+body.theme-light-mode .chat-messages { background-color: #f4f4f8; }
+body.theme-light-mode .yui-message {
+    background-color: #e0e0e5;
+    color: #333;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+}
+body.theme-light-mode .user-message {
+    background: linear-gradient(to right, #0078d4, #005a9e);
+    color: white;
+}
+body.theme-light-mode .system-info { color: #555; }
+body.theme-light-mode .chat-input-area {
+    border-top: 1px solid #d0d0d5;
+    background-color: #e8e8f0;
+}
+body.theme-light-mode .chat-input-area input {
+    border: 1px solid #c5c5d0;
+    background-color: #fff;
+    color: #333;
+}
+body.theme-light-mode .chat-input-area input:focus {
+    border-color: #0078d4;
+    box-shadow: 0 0 0 2px rgba(0, 120, 212, 0.2);
+}
+body.theme-light-mode #settingsView h1, body.theme-light-mode #dashboardView h1 {
+    color: #0064b4;
+    border-bottom: 2px solid #d0d0d5;
+}
+body.theme-light-mode .settings-section label { color: #555; }
+body.theme-light-mode .settings-section input[type="password"],
+body.theme-light-mode .settings-section input[type="text"],
+body.theme-light-mode .settings-section select {
+    border: 1px solid #c5c5d0;
+    background-color: #fff;
+    color: #333;
+}
+body.theme-light-mode .settings-section input:focus,
+body.theme-light-mode .settings-section select:focus {
+    border-color: #0078d4;
+    box-shadow: 0 0 0 2px rgba(0, 120, 212, 0.2);
+}
+body.theme-light-mode .chart-container,
+body.theme-light-mode .info-panel {
+    background-color: #ffffff;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    border: 1px solid #e0e0e0;
+}
+body.theme-light-mode .chart-container h3, body.theme-light-mode .info-panel h3 {
+    color: #0064b4;
+    border-bottom: 1px solid #d5d5da;
+}
+body.theme-light-mode .info-panel li { border-bottom: 1px solid #eee; color: #555; }
+body.theme-light-mode .status-panel { background-color: #fdfdfd; border-color: #eee; }
+body.theme-light-mode .status-panel h3 { color: #0078d4; border-bottom-color: #eee; }
+body.theme-light-mode .status-panel p, body.theme-light-mode .status-panel li { color: #555; }
+body.theme-light-mode .status-panel span { color: #222; }
+body.theme-light-mode .user-profile h4 { color: #0078d4; }
+body.theme-light-mode .message .timestamp { color: rgba(0,0,0,0.4); }
+body.theme-light-mode .user-message .timestamp { color: rgba(0,0,0,0.5); }
+body.theme-light-mode .yui-message .timestamp { color: rgba(0,0,0,0.5); }
+
+/* --- Theme: Cyberpunk Dream --- */
+body.theme-cyberpunk-dream {
+    font-family: 'Consolas', 'Lucida Console', monospace;
+    background-color: #0d0221;
+    color: #00f0ff;
+}
+body.theme-cyberpunk-dream .sidebar {
+    background-color: #241b47;
+    border-right: 1px solid #ff00ff;
+}
+body.theme-cyberpunk-dream .avatar-placeholder {
+    background: linear-gradient(135deg, #ff00ff, #3a2f6b);
+    border-color: #00f0ff;
+    box-shadow: 0 0 15px #00f0ff, 0 0 5px #ff00ff inset;
+}
+body.theme-cyberpunk-dream #yuiAvatarInitials {
+    color: #00f0ff;
+    text-shadow: 0 0 5px #00f0ff;
+}
+body.theme-cyberpunk-dream .profile-preview h2 { color: #00f0ff; text-shadow: 0 0 3px #00f0ff;}
+body.theme-cyberpunk-dream .profile-preview p { color: #ff00ff; }
+
+body.theme-cyberpunk-dream .sidebar nav button {
+    background-color: #3a2f6b;
+    color: #00f0ff;
+    border-left: 3px solid transparent;
+    text-shadow: 0 0 5px #00f0ff;
+}
+body.theme-cyberpunk-dream .sidebar nav button.active,
+body.theme-cyberpunk-dream .sidebar nav button:hover {
+    background-color: rgba(255, 0, 255, 0.2); /* Neon pink */
+    color: #ff00ff;
+    border-left: 3px solid #ff00ff;
+    box-shadow: 0 0 10px #ff00ff;
+}
+body.theme-cyberpunk-dream .main-content {
+    background-color: #100a30;
+}
+body.theme-cyberpunk-dream .chat-header {
+    color: #ff00ff;
+    border-bottom: 1px solid #00f0ff;
+    text-shadow: 0 0 7px #ff00ff;
+    background-color: #241b47;
+}
+body.theme-cyberpunk-dream .chat-messages {
+    background-color: #100a30;
+}
+body.theme-cyberpunk-dream .user-message {
+    background: linear-gradient(to right, #ff00ff, #8A2BE2); /* Neon pink to blue-violet */
+    color: #0d0221;
+    border: 1px solid #00f0ff;
+    box-shadow: 0 0 5px #ff00ff;
+}
+body.theme-cyberpunk-dream .yui-message {
+    background-color: #3a2f6b;
+    color: #00f0ff;
+    border: 1px solid #00f0ff;
+    box-shadow: 0 0 5px #00f0ff;
+}
+body.theme-cyberpunk-dream .system-info { color: #ff00ff; opacity: 0.7;}
+body.theme-cyberpunk-dream .chat-input-area {
+    border-top: 1px solid #ff00ff;
+    background-color: #241b47;
+}
+body.theme-cyberpunk-dream .chat-input-area input {
+    border: 1px solid #ff00ff;
+    background-color: #100a30;
+    color: #00f0ff;
+}
+body.theme-cyberpunk-dream .chat-input-area input:focus {
+    border-color: #00f0ff;
+    box-shadow: 0 0 5px #00f0ff;
+}
+body.theme-cyberpunk-dream .chat-input-area button {
+    background-color: #00f0ff;
+    color: #0d0221;
+    border: 1px solid #ff00ff;
+}
+body.theme-cyberpunk-dream .chat-input-area button:hover {
+    background-color: #ff00ff;
+    color: #0d0221;
+    box-shadow: 0 0 10px #ff00ff;
+}
+body.theme-cyberpunk-dream #settingsView h1, body.theme-cyberpunk-dream #dashboardView h1 {
+    color: #ff00ff;
+    border-bottom: 2px solid #00f0ff;
+}
+body.theme-cyberpunk-dream .settings-section label { color: #ff00ff; }
+body.theme-cyberpunk-dream .settings-section input[type="password"],
+body.theme-cyberpunk-dream .settings-section input[type="text"],
+body.theme-cyberpunk-dream .settings-section select {
+    border: 1px solid #00f0ff;
+    background-color: #241b47;
+    color: #00f0ff;
+}
+body.theme-cyberpunk-dream .settings-section input:focus,
+body.theme-cyberpunk-dream .settings-section select:focus {
+    border-color: #ff00ff;
+    box-shadow: 0 0 5px #ff00ff;
+}
+body.theme-cyberpunk-dream #saveApiKeyButton {
+    background-color: #00f0ff; color: #0d0221;
+}
+body.theme-cyberpunk-dream #saveApiKeyButton:hover {
+    background-color: #ff00ff;
+}
+body.theme-cyberpunk-dream .danger-button {
+    background-color: #ff0033; color: #fff; border: 1px solid #ff00ff;
+}
+body.theme-cyberpunk-dream .danger-button:hover {
+    background-color: #cc0022; box-shadow: 0 0 10px #ff0033;
+}
+body.theme-cyberpunk-dream .chart-container,
+body.theme-cyberpunk-dream .info-panel {
+    background-color: #241b47c0;
+    border: 1px solid #ff00ff;
+    box-shadow: 0 0 15px #00f0ffaa;
+}
+body.theme-cyberpunk-dream .chart-container h3, body.theme-cyberpunk-dream .info-panel h3 {
+    color: #00f0ff;
+    border-bottom: 1px solid #3a2f6b;
+}
+body.theme-cyberpunk-dream .info-panel li { border-bottom: 1px solid #3a2f6b; color: #00f0ff; }
+body.theme-cyberpunk-dream #clearChatButton { background-color: #3a2f6b; color: #00f0ff; border-color: #ff00ff; }
+body.theme-cyberpunk-dream #clearChatButton:hover { background-color: #ff00ff; color: #0d0221; }
+body.theme-cyberpunk-dream .message .timestamp { color: rgba(0, 240, 255, 0.5); }
+
+/* --- Theme: OLED Black --- */
+body.theme-oled-black { background-color: #000000; color: #e0e0e0; }
+body.theme-oled-black .sidebar { background-color: #050505; border-right: 1px solid #1a1a1a; }
+body.theme-oled-black .avatar-placeholder { background: linear-gradient(135deg, #181818, #080808); border: 3px solid #222; }
+body.theme-oled-black #yuiAvatarInitials { color: #f0f0f0; }
+body.theme-oled-black .profile-preview h2 { color: #f0f0f0; }
+body.theme-oled-black .profile-preview p { color: #b0b0b0; }
+body.theme-oled-black .status-panel { background-color: #0a0a0a; border-color: #1f1f1f; }
+body.theme-oled-black .status-panel h3 { color: #00bbff; border-bottom-color: #252525; }
+body.theme-oled-black .status-panel p, body.theme-oled-black .status-panel li { color: #a0a0a0; }
+body.theme-oled-black .status-panel span { color: #d0d0d0; }
+body.theme-oled-black .user-profile h4 { color: #00bbff; }
+body.theme-oled-black .sidebar nav button { color: #b0b0b0; background-color: transparent; border-color: #1a1a1a; }
+body.theme-oled-black .sidebar nav button.active, body.theme-oled-black .sidebar nav button:hover { background-color: #1a1a1a; color: #ffffff; border-color: #333; }
+body.theme-oled-black .main-content { background-color: #000000; }
+body.theme-oled-black .chat-header { background-color: #080808; border-bottom: 1px solid #1a1a1a; color: #f0f0f0; }
+body.theme-oled-black .chat-messages { background-color: #000000; }
+body.theme-oled-black .yui-message { background-color: #101010; color: #d0d0d0; border: 1px solid #202020; }
+body.theme-oled-black .user-message { background-color: #181818; color: #d0d0d0; border: 1px solid #282828; }
+body.theme-oled-black .system-info { color: #999999; }
+body.theme-oled-black .chat-input-area { background-color: #050505; border-top: 1px solid #1a1a1a; }
+body.theme-oled-black .chat-input-area input { background-color: #101010; color: #e0e0e0; border: 1px solid #252525; }
+body.theme-oled-black .chat-input-area input:focus { border-color: #404040; box-shadow: 0 0 3px #404040; }
+body.theme-oled-black .chat-input-area button { background-color: #222; color: #ccc; border: 1px solid #333; }
+body.theme-oled-black .chat-input-area button:hover { background-color: #333; color: #fff; }
+body.theme-oled-black #settingsView h1, body.theme-oled-black #dashboardView h1 { color: #f0f0f0; border-bottom: 1px solid #252525; }
+body.theme-oled-black .settings-section label { color: #c0c0c0; }
+body.theme-oled-black .settings-section input[type="password"],
+body.theme-oled-black .settings-section input[type="text"],
+body.theme-oled-black .settings-section select { background-color: #101010; color: #e0e0e0; border: 1px solid #252525; }
+body.theme-oled-black .settings-section input:focus,
+body.theme-oled-black .settings-section select:focus { border-color: #404040; box-shadow: 0 0 3px #404040; }
+body.theme-oled-black .chart-container, body.theme-oled-black .info-panel { background-color: #080808; border: 1px solid #1a1a1a; }
+body.theme-oled-black .chart-container h3, body.theme-oled-black .info-panel h3 { color: #e0e0e0; }
+body.theme-oled-black .info-panel li { border-bottom: 1px solid #252525; color: #b0b0b0; }
+body.theme-oled-black .primary-button { background-color: #007acc; color: #ffffff; border: 1px solid #005c99;}
+body.theme-oled-black .primary-button:hover { background-color: #005c99; }
+body.theme-oled-black .danger-button { background-color: #cc0000; border: 1px solid #990000;}
+body.theme-oled-black .danger-button:hover { background-color: #990000; }
+body.theme-oled-black #clearChatButton { background-color: #181818; color: #aaa; border-color: #282828; }
+body.theme-oled-black #clearChatButton:hover { background-color: #282828; color: #ddd; }
+body.theme-oled-black .message .timestamp { color: rgba(224, 224, 224, 0.4); }
+
+/* --- Theme: Ocean Vibe --- */
+body.theme-ocean-vibe { background-color: #00334d; color: #e0f7fa; }
+body.theme-ocean-vibe .sidebar { background-color: #00405c; border-right: 1px solid #005073; }
+body.theme-ocean-vibe .avatar-placeholder { background: linear-gradient(135deg, #007799, #005f7a); border: 3px solid #0099cc; }
+body.theme-ocean-vibe #yuiAvatarInitials { color: #e0f7fa; }
+body.theme-ocean-vibe .profile-preview h2 { color: #80dfff; }
+body.theme-ocean-vibe .profile-preview p { color: #b3ecff; }
+body.theme-ocean-vibe .status-panel { background-color: #004866; border-color: #005c80; }
+body.theme-ocean-vibe .status-panel h3 { color: #ffc107; border-bottom-color: #006080; }
+body.theme-ocean-vibe .status-panel p, body.theme-ocean-vibe .status-panel li { color: #b3e0f2; }
+body.theme-ocean-vibe .status-panel span { color: #e0f7fa; }
+body.theme-ocean-vibe .user-profile h4 { color: #ffc107; }
+body.theme-ocean-vibe .sidebar nav button { color: #b3ecff; background-color: transparent; border-color: #005073; }
+body.theme-ocean-vibe .sidebar nav button.active, body.theme-ocean-vibe .sidebar nav button:hover { background-color: #005073; color: #ffffff; border-color: #007799; }
+body.theme-ocean-vibe .main-content { background-color: #00334d; }
+body.theme-ocean-vibe .chat-header { background-color: #00405c; border-bottom: 1px solid #005073; color: #e0f7fa; }
+body.theme-ocean-vibe .chat-messages { background-color: #00334d; }
+body.theme-ocean-vibe .yui-message { background-color: #005073; color: #e0f7fa; border: 1px solid #006080; }
+body.theme-ocean-vibe .user-message { background-color: #006080; color: #e0f7fa; border: 1px solid #007090; }
+body.theme-ocean-vibe .system-info { color: #80dfff; }
+body.theme-ocean-vibe .chat-input-area { background-color: #00405c; border-top: 1px solid #005073; }
+body.theme-ocean-vibe .chat-input-area input { background-color: #005073; color: #e0f7fa; border: 1px solid #006080; }
+body.theme-ocean-vibe .chat-input-area input:focus { border-color: #0099cc; box-shadow: 0 0 3px #0099cc; }
+body.theme-ocean-vibe .chat-input-area button { background-color: #007799; color: #e0f7fa; border: 1px solid #0099cc; }
+body.theme-ocean-vibe .chat-input-area button:hover { background-color: #0099cc; color: #fff; }
+body.theme-ocean-vibe #settingsView h1, body.theme-ocean-vibe #dashboardView h1 { color: #e0f7fa; border-bottom: 1px solid #005073; }
+body.theme-ocean-vibe .settings-section label { color: #b3ecff; }
+body.theme-ocean-vibe .settings-section input[type="password"],
+body.theme-ocean-vibe .settings-section input[type="text"],
+body.theme-ocean-vibe .settings-section select { background-color: #005073; color: #e0f7fa; border: 1px solid #006080; }
+body.theme-ocean-vibe .settings-section input:focus,
+body.theme-ocean-vibe .settings-section select:focus { border-color: #0099cc; box-shadow: 0 0 3px #0099cc; }
+body.theme-ocean-vibe .chart-container, body.theme-ocean-vibe .info-panel { background-color: #00405c; border: 1px solid #005073; }
+body.theme-ocean-vibe .chart-container h3, body.theme-ocean-vibe .info-panel h3 { color: #e0f7fa; }
+body.theme-ocean-vibe .info-panel li { border-bottom: 1px solid #005073; color: #b3ecff; }
+body.theme-ocean-vibe .primary-button { background-color: #ffc107; color: #00334d; border: 1px solid #ffa000;}
+body.theme-ocean-vibe .primary-button:hover { background-color: #ffa000; }
+body.theme-ocean-vibe .danger-button { background-color: #d9534f; border: 1px solid #c9302c;}
+body.theme-ocean-vibe .danger-button:hover { background-color: #c9302c; }
+body.theme-ocean-vibe #clearChatButton { background-color: #005073; color: #b3ecff; border-color: #006080; }
+body.theme-ocean-vibe #clearChatButton:hover { background-color: #006080; color: #e0f7fa; }
+body.theme-ocean-vibe .message .timestamp { color: rgba(224, 247, 250, 0.5); }
+
+/* --- Theme: Retro Gaming --- */
+body.theme-retro-gaming { background-color: #1a1a2e; color: #00ff00; font-family: 'Press Start 2P', 'Courier New', monospace; }
+body.theme-retro-gaming .sidebar { background-color: #162447; border-right: 2px solid #ffc947; }
+body.theme-retro-gaming .avatar-placeholder { background: linear-gradient(135deg, #e43f5a, #1f4068); border: 3px solid #ffc947; image-rendering: pixelated; }
+body.theme-retro-gaming #yuiAvatarInitials { color: #ffc947; text-shadow: 1px 1px #e43f5a; }
+body.theme-retro-gaming .profile-preview h2 { color: #ffc947; text-shadow: 1px 1px #e43f5a; }
+body.theme-retro-gaming .profile-preview p { color: #00ff00; }
+body.theme-retro-gaming .status-panel { background-color: #1f4068; border: 2px solid #00aaff; font-size:0.9em; } /* Smaller font for pixel theme */
+body.theme-retro-gaming .status-panel h3 { color: #ffc947; border-bottom: 2px solid #e43f5a; text-shadow: 1px 1px #1a1a2e; }
+body.theme-retro-gaming .status-panel p, body.theme-retro-gaming .status-panel li { color: #00ff00; }
+body.theme-retro-gaming .status-panel span { color: #ffff00; } /* Yellow for values */
+body.theme-retro-gaming .user-profile h4 { color: #ffc947; }
+body.theme-retro-gaming .sidebar nav button { color: #00ff00; background-color: #1f4068; border: 2px solid #00aaff; text-shadow: 1px 1px #1a1a2e; }
+body.theme-retro-gaming .sidebar nav button.active, body.theme-retro-gaming .sidebar nav button:hover { background-color: #ffc947; color: #1a1a2e; border-color: #e43f5a; text-shadow: none; }
+body.theme-retro-gaming .main-content { background-color: #1a1a2e; }
+body.theme-retro-gaming .chat-header { background-color: #162447; border-bottom: 2px solid #ffc947; color: #ffc947; padding: 8px; font-size: 1.2em; }
+body.theme-retro-gaming .chat-messages { background-color: #1a1a2e; }
+body.theme-retro-gaming .yui-message { background-color: #1f4068; color: #00ff00; border: 2px solid #ffc947; box-shadow: 2px 2px #e43f5a; }
+body.theme-retro-gaming .user-message { background-color: #e43f5a; color: #ffffff; border: 2px solid #ffc947; box-shadow: 2px 2px #1f4068; }
+body.theme-retro-gaming .system-info { color: #00aaff; text-shadow: 1px 1px #162447; }
+body.theme-retro-gaming .chat-input-area { background-color: #162447; border-top: 2px solid #ffc947; }
+body.theme-retro-gaming .chat-input-area input { background-color: #1f4068; color: #00ff00; border: 2px solid #00aaff; padding: 8px; }
+body.theme-retro-gaming .chat-input-area input:focus { border-color: #ffc947; box-shadow: 0 0 0 2px #ffc947; }
+body.theme-retro-gaming .chat-input-area button { background-color: #ffc947; color: #1a1a2e; border: 2px solid #e43f5a; padding: 8px 12px; }
+body.theme-retro-gaming .chat-input-area button:hover { background-color: #e43f5a; color: #ffc947; border-color: #ffc947; }
+body.theme-retro-gaming #settingsView h1, body.theme-retro-gaming #dashboardView h1 { color: #ffc947; border-bottom: 2px solid #e43f5a; text-shadow: 1px 1px #1a1a2e; }
+body.theme-retro-gaming .settings-section label { color: #00ff00; }
+body.theme-retro-gaming .settings-section input[type="password"],
+body.theme-retro-gaming .settings-section input[type="text"],
+body.theme-retro-gaming .settings-section select { background-color: #1f4068; color: #00ff00; border: 2px solid #00aaff; font-family: 'Press Start 2P', 'Courier New', monospace; }
+body.theme-retro-gaming .settings-section input:focus,
+body.theme-retro-gaming .settings-section select:focus { border-color: #ffc947; box-shadow: 0 0 0 2px #ffc947; }
+body.theme-retro-gaming .chart-container, body.theme-retro-gaming .info-panel { background-color: #162447; border: 2px solid #ffc947; }
+body.theme-retro-gaming .chart-container h3, body.theme-retro-gaming .info-panel h3 { color: #ffc947; }
+body.theme-retro-gaming .info-panel li { border-bottom: 2px solid #1f4068; color: #00ff00; }
+body.theme-retro-gaming .primary-button { background-color: #00ff00; color: #1a1a2e; border: 2px solid #ffc947; text-shadow: none;}
+body.theme-retro-gaming .primary-button:hover { background-color: #ffc947; color: #1a1a2e; border-color: #00ff00;}
+body.theme-retro-gaming .danger-button { background-color: #e43f5a; color: #ffffff; border: 2px solid #ffc947; text-shadow: none;}
+body.theme-retro-gaming .danger-button:hover { background-color: #ffc947; color: #e43f5a; border-color: #e43f5a;}
+body.theme-retro-gaming #clearChatButton { background-color: #e43f5a; color: #ffc947; border: 2px solid #ffc947; padding: 4px 8px; }
+body.theme-retro-gaming #clearChatButton:hover { background-color: #ffc947; color: #e43f5a; border-color: #e43f5a; }
+body.theme-retro-gaming .message .timestamp { color: #00aaff; font-size: 0.6em; bottom: -12px; }
+
+/* --- Theme: Purple Haze --- */
+body.theme-purple-haze { background-color: #2c003e; color: #e6e6fa; }
+body.theme-purple-haze .sidebar { background-color: #3d0054; border-right: 1px solid #530073; }
+body.theme-purple-haze .avatar-placeholder { background: linear-gradient(135deg, #7b1fa2, #4a0072); border: 3px solid #ab47bc; }
+body.theme-purple-haze #yuiAvatarInitials { color: #e6e6fa; }
+body.theme-purple-haze .profile-preview h2 { color: #ce93d8; }
+body.theme-purple-haze .profile-preview p { color: #e1bee7; }
+body.theme-purple-haze .status-panel { background-color: #4a0072; border-color: #6a1b9a; }
+body.theme-purple-haze .status-panel h3 { color: #f06292; border-bottom-color: #7b1fa2; }
+body.theme-purple-haze .status-panel p, body.theme-purple-haze .status-panel li { color: #d1c4e9; }
+body.theme-purple-haze .status-panel span { color: #e6e6fa; }
+body.theme-purple-haze .user-profile h4 { color: #f06292; }
+body.theme-purple-haze .sidebar nav button { color: #e1bee7; background-color: transparent; border-color: #530073; }
+body.theme-purple-haze .sidebar nav button.active, body.theme-purple-haze .sidebar nav button:hover { background-color: #530073; color: #ffffff; border-color: #7b1fa2; }
+body.theme-purple-haze .main-content { background-color: #2c003e; }
+body.theme-purple-haze .chat-header { background-color: #3d0054; border-bottom: 1px solid #530073; color: #ce93d8; }
+body.theme-purple-haze .chat-messages { background-color: #2c003e; }
+body.theme-purple-haze .yui-message { background-color: #4a0072; color: #e6e6fa; border: 1px solid #6a1b9a; }
+body.theme-purple-haze .user-message { background-color: #530073; color: #e6e6fa; border: 1px solid #7b1fa2; }
+body.theme-purple-haze .system-info { color: #ba68c8; }
+body.theme-purple-haze .chat-input-area { background-color: #3d0054; border-top: 1px solid #530073; }
+body.theme-purple-haze .chat-input-area input { background-color: #4a0072; color: #e6e6fa; border: 1px solid #6a1b9a; }
+body.theme-purple-haze .chat-input-area input:focus { border-color: #ab47bc; box-shadow: 0 0 3px #ab47bc; }
+body.theme-purple-haze .chat-input-area button { background-color: #7b1fa2; color: #e6e6fa; border: 1px solid #ab47bc; }
+body.theme-purple-haze .chat-input-area button:hover { background-color: #ab47bc; color: #fff; }
+body.theme-purple-haze #settingsView h1, body.theme-purple-haze #dashboardView h1 { color: #ce93d8; border-bottom: 1px solid #530073; }
+body.theme-purple-haze .settings-section label { color: #e1bee7; }
+body.theme-purple-haze .settings-section input[type="password"],
+body.theme-purple-haze .settings-section input[type="text"],
+body.theme-purple-haze .settings-section select { background-color: #4a0072; color: #e6e6fa; border: 1px solid #6a1b9a; }
+body.theme-purple-haze .settings-section input:focus,
+body.theme-purple-haze .settings-section select:focus { border-color: #ab47bc; box-shadow: 0 0 3px #ab47bc; }
+body.theme-purple-haze .chart-container, body.theme-purple-haze .info-panel { background-color: #3d0054; border: 1px solid #530073; }
+body.theme-purple-haze .chart-container h3, body.theme-purple-haze .info-panel h3 { color: #ce93d8; }
+body.theme-purple-haze .info-panel li { border-bottom: 1px solid #530073; color: #e1bee7; }
+body.theme-purple-haze .primary-button { background-color: #ab47bc; color: #ffffff; border: 1px solid #7b1fa2;}
+body.theme-purple-haze .primary-button:hover { background-color: #7b1fa2; }
+body.theme-purple-haze .danger-button { background-color: #e53935; border: 1px solid #c62828;}
+body.theme-purple-haze .danger-button:hover { background-color: #c62828; }
+body.theme-purple-haze #clearChatButton { background-color: #6a1b9a; color: #e1bee7; border-color: #7b1fa2; }
+body.theme-purple-haze #clearChatButton:hover { background-color: #7b1fa2; color: #e6e6fa; }
+body.theme-purple-haze .message .timestamp { color: rgba(230, 230, 250, 0.5); }
+
+/* --- Theme: Stoner's Paradise --- */
+body.theme-stoners-paradise { background-color: #384c34; color: #e8f5e9; }
+body.theme-stoners-paradise .sidebar { background-color: #2e402b; border-right: 1px solid #4a6046; }
+body.theme-stoners-paradise .avatar-placeholder { background: linear-gradient(135deg, #556b2f, #3b4a20); border: 3px solid #6b8e23; }
+body.theme-stoners-paradise #yuiAvatarInitials { color: #e8f5e9; }
+body.theme-stoners-paradise .profile-preview h2 { color: #a5d6a7; }
+body.theme-stoners-paradise .profile-preview p { color: #c8e6c9; }
+body.theme-stoners-paradise .status-panel { background-color: #3b4a20; border-color: #556b2f; }
+body.theme-stoners-paradise .status-panel h3 { color: #ffb300; border-bottom-color: #556b2f; }
+body.theme-stoners-paradise .status-panel p, body.theme-stoners-paradise .status-panel li { color: #c8e6c9; }
+body.theme-stoners-paradise .status-panel span { color: #e8f5e9; }
+body.theme-stoners-paradise .user-profile h4 { color: #ffb300; }
+body.theme-stoners-paradise .sidebar nav button { color: #c8e6c9; background-color: transparent; border-color: #4a6046; }
+body.theme-stoners-paradise .sidebar nav button.active, body.theme-stoners-paradise .sidebar nav button:hover { background-color: #4a6046; color: #ffffff; border-color: #556b2f; }
+body.theme-stoners-paradise .main-content { background-color: #384c34; }
+body.theme-stoners-paradise .chat-header { background-color: #2e402b; border-bottom: 1px solid #4a6046; color: #a5d6a7; }
+body.theme-stoners-paradise .chat-messages { background-color: #384c34; }
+body.theme-stoners-paradise .yui-message { background-color: #4a6046; color: #e8f5e9; border: 1px solid #5a7556; }
+body.theme-stoners-paradise .user-message { background-color: #556b2f; color: #e8f5e9; border: 1px solid #6b8e23; }
+body.theme-stoners-paradise .system-info { color: #81c784; }
+body.theme-stoners-paradise .chat-input-area { background-color: #2e402b; border-top: 1px solid #4a6046; }
+body.theme-stoners-paradise .chat-input-area input { background-color: #4a6046; color: #e8f5e9; border: 1px solid #5a7556; }
+body.theme-stoners-paradise .chat-input-area input:focus { border-color: #6b8e23; box-shadow: 0 0 3px #6b8e23; }
+body.theme-stoners-paradise .chat-input-area button { background-color: #6b8e23; color: #e8f5e9; border: 1px solid #8fbc8f; }
+body.theme-stoners-paradise .chat-input-area button:hover { background-color: #8fbc8f; color: #2e402b; }
+body.theme-stoners-paradise #settingsView h1, body.theme-stoners-paradise #dashboardView h1 { color: #a5d6a7; border-bottom: 1px solid #4a6046; }
+body.theme-stoners-paradise .settings-section label { color: #c8e6c9; }
+body.theme-stoners-paradise .settings-section input[type="password"],
+body.theme-stoners-paradise .settings-section input[type="text"],
+body.theme-stoners-paradise .settings-section select { background-color: #4a6046; color: #e8f5e9; border: 1px solid #5a7556; }
+body.theme-stoners-paradise .settings-section input:focus,
+body.theme-stoners-paradise .settings-section select:focus { border-color: #6b8e23; box-shadow: 0 0 3px #6b8e23; }
+body.theme-stoners-paradise .chart-container, body.theme-stoners-paradise .info-panel { background-color: #2e402b; border: 1px solid #4a6046; }
+body.theme-stoners-paradise .chart-container h3, body.theme-stoners-paradise .info-panel h3 { color: #a5d6a7; }
+body.theme-stoners-paradise .info-panel li { border-bottom: 1px solid #4a6046; color: #c8e6c9; }
+body.theme-stoners-paradise .primary-button { background-color: #ff8f00; color: #2e402b; border: 1px solid #e65100;}
+body.theme-stoners-paradise .primary-button:hover { background-color: #e65100; }
+body.theme-stoners-paradise .danger-button { background-color: #d32f2f; border: 1px solid #b71c1c;}
+body.theme-stoners-paradise .danger-button:hover { background-color: #b71c1c; }
+body.theme-stoners-paradise #clearChatButton { background-color: #556b2f; color: #c8e6c9; border-color: #6b8e23; }
+body.theme-stoners-paradise #clearChatButton:hover { background-color: #6b8e23; color: #e8f5e9; }
+body.theme-stoners-paradise .message .timestamp { color: rgba(232, 245, 233, 0.6); }
+
+/* --- Theme: Green Leaf Vibes --- */
+body.theme-green-leaf-vibes { background-color: #224b2f; color: #e8f5e9; }
+body.theme-green-leaf-vibes .sidebar { background-color: #1b3d26; border-right: 1px solid #357a4b; }
+body.theme-green-leaf-vibes .avatar-placeholder { background: linear-gradient(135deg, #388e3c, #2e7d32); border: 3px solid #4caf50; }
+body.theme-green-leaf-vibes #yuiAvatarInitials { color: #e8f5e9; }
+body.theme-green-leaf-vibes .profile-preview h2 { color: #81c784; }
+body.theme-green-leaf-vibes .profile-preview p { color: #a5d6a7; }
+body.theme-green-leaf-vibes .status-panel { background-color: #2e7d32; border-color: #43a047; }
+body.theme-green-leaf-vibes .status-panel h3 { color: #ffeb3b; border-bottom-color: #43a047; }
+body.theme-green-leaf-vibes .status-panel p, body.theme-green-leaf-vibes .status-panel li { color: #c8e6c9; }
+body.theme-green-leaf-vibes .status-panel span { color: #e8f5e9; }
+body.theme-green-leaf-vibes .user-profile h4 { color: #ffeb3b; }
+body.theme-green-leaf-vibes .sidebar nav button { color: #a5d6a7; background-color: transparent; border-color: #357a4b; }
+body.theme-green-leaf-vibes .sidebar nav button.active, body.theme-green-leaf-vibes .sidebar nav button:hover { background-color: #357a4b; color: #ffffff; border-color: #4caf50; }
+body.theme-green-leaf-vibes .main-content { background-color: #224b2f; }
+body.theme-green-leaf-vibes .chat-header { background-color: #1b3d26; border-bottom: 1px solid #357a4b; color: #81c784; }
+body.theme-green-leaf-vibes .chat-messages { background-color: #224b2f; }
+body.theme-green-leaf-vibes .yui-message { background-color: #2e7d32; color: #e8f5e9; border: 1px solid #43a047; }
+body.theme-green-leaf-vibes .user-message { background-color: #388e3c; color: #e8f5e9; border: 1px solid #4caf50; }
+body.theme-green-leaf-vibes .system-info { color: #66bb6a; }
+body.theme-green-leaf-vibes .chat-input-area { background-color: #1b3d26; border-top: 1px solid #357a4b; }
+body.theme-green-leaf-vibes .chat-input-area input { background-color: #2e7d32; color: #e8f5e9; border: 1px solid #43a047; }
+body.theme-green-leaf-vibes .chat-input-area input:focus { border-color: #4caf50; box-shadow: 0 0 3px #4caf50; }
+body.theme-green-leaf-vibes .chat-input-area button { background-color: #43a047; color: #e8f5e9; border: 1px solid #4caf50; }
+body.theme-green-leaf-vibes .chat-input-area button:hover { background-color: #4caf50; color: #fff; }
+body.theme-green-leaf-vibes #settingsView h1, body.theme-green-leaf-vibes #dashboardView h1 { color: #81c784; border-bottom: 1px solid #357a4b; }
+body.theme-green-leaf-vibes .settings-section label { color: #a5d6a7; }
+body.theme-green-leaf-vibes .settings-section input[type="password"],
+body.theme-green-leaf-vibes .settings-section input[type="text"],
+body.theme-green-leaf-vibes .settings-section select { background-color: #2e7d32; color: #e8f5e9; border: 1px solid #43a047; }
+body.theme-green-leaf-vibes .settings-section input:focus,
+body.theme-green-leaf-vibes .settings-section select:focus { border-color: #4caf50; box-shadow: 0 0 3px #4caf50; }
+body.theme-green-leaf-vibes .chart-container, body.theme-green-leaf-vibes .info-panel { background-color: #1b3d26; border: 1px solid #357a4b; }
+body.theme-green-leaf-vibes .chart-container h3, body.theme-green-leaf-vibes .info-panel h3 { color: #81c784; }
+body.theme-green-leaf-vibes .info-panel li { border-bottom: 1px solid #357a4b; color: #a5d6a7; }
+body.theme-green-leaf-vibes .primary-button { background-color: #4caf50; color: #ffffff; border: 1px solid #388e3c;}
+body.theme-green-leaf-vibes .primary-button:hover { background-color: #388e3c; }
+body.theme-green-leaf-vibes .danger-button { background-color: #f44336; border: 1px solid #d32f2f;}
+body.theme-green-leaf-vibes .danger-button:hover { background-color: #d32f2f; }
+body.theme-green-leaf-vibes #clearChatButton { background-color: #388e3c; color: #c8e6c9; border-color: #4caf50; }
+body.theme-green-leaf-vibes #clearChatButton:hover { background-color: #4caf50; color: #e8f5e9; }
+body.theme-green-leaf-vibes .message .timestamp { color: rgba(232, 245, 233, 0.6); }
+
+/* Chart.js Global Font Color (applied via JS for dynamic theme changes) */
+/* Chart.defaults.color = '#ccc'; // Default for dark themes */
+/* Chart.defaults.borderColor = '#444'; // Default for dark themes */
+
+/* Primary Button Styling */
+.primary-button {
+    background-color: #0078d4;
+    color: white;
+}
+.primary-button:hover {
+    background-color: #005a9e;
+}
+
+/* For Cyberpunk theme */
+body.theme-cyberpunk-dream .primary-button {
+    background-color: #00f0ff; 
+    color: #0d0221;
+    border: 1px solid #ff00ff;
+}
+body.theme-cyberpunk-dream .primary-button:hover {
+    background-color: #ff00ff;
+    color: #0d0221;
+    box-shadow: 0 0 10px #ff00ff;
+}
+
+/* ...existing styles... */
+
+.settings-nav {
+    display: flex;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #555;
+}
+
+.settings-nav-button {
+    padding: 10px 15px;
+    cursor: pointer;
+    border: none;
+    background-color: transparent;
+    color: #ccc;
+    font-size: 1em;
+    border-bottom: 2px solid transparent; /* For active state */
+}
+
+.settings-nav-button.active {
+    color: #fff;
+    border-bottom: 2px solid var(--primary-accent-color, #4CAF50); /* Use theme variable or default */
+}
+
+.settings-nav-button:hover {
+    background-color: #444;
+}
+
+.settings-content {
+    display: none; /* Hidden by default */
+}
+
+.settings-content.active-settings-content {
+    display: block; /* Show active content */
+}
+
+.log-display-area {
+    background-color: #222;
+    color: #ddd;
+    padding: 15px;
+    border-radius: 5px;
+    height: 400px; /* Or whatever height you prefer */
+    overflow-y: auto;
+    white-space: pre-wrap; /* To wrap long lines and preserve formatting */
+    word-break: break-all;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.9em;
+    border: 1px solid #444;
+}
+
+#refreshLogsButton {
+    margin-bottom: 10px;
+    padding: 8px 12px;
+    background-color: #555;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+#refreshLogsButton:hover {
+    background-color: #666;
+}
+
+/* ...rest of your styles... */

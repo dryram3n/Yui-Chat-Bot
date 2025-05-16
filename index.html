@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Yui's Echo Chamber</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <!-- Include a charting library, e.g., Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="css/markdown-styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+</head>
+<body class="theme-default-dark"> <!-- Default theme -->
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="profile-preview">
+                <div id="yuiAvatar" class="avatar-placeholder">
+                    <span id="yuiAvatarInitials">Y</span>
+                </div>
+                <h2 id="yuiNameDisplay">Yui</h2>
+                <p id="yuiFriendshipStageDisplay">Stranger</p>
+            </div>
+            <div id="yuiStatusPanel" class="status-panel">
+                <h3>Yui's Status</h3>
+                <p>Mood: <span id="yuiMoodDisplay">-</span></p>
+                <p>Last Active: <span id="yuiLastActiveDisplay">-</span></p>
+                <p>Memories: <span id="yuiMemoryCountDisplay">0</span></p>
+            </div>
+            <nav>
+                <button id="chatTabButton" class="active">Chat</button>
+                <button id="dashboardTabButton">Dashboard</button>
+                <button id="settingsTabButton">Settings</button>
+            </nav>
+
+            <div id="yuiEmotionPanel" class="status-panel emotion-panel">
+                <h3>Yui's Reaction</h3>
+                <div id="yuiEmotionFace" class="emotion-face">😐</div>
+            </div>
+
+            <div id="userProfilePanel" class="status-panel user-profile">
+                <h3>User Profile</h3>
+                <p>Name: <span id="userNameDisplay">User</span></p>
+                <h4>Preferences (Known by Yui):</h4>
+                <ul id="userPreferencesList">
+                    <li>Food: <span id="userPrefFood">-</span></li>
+                    <li>Color: <span id="userPrefColor">-</span></li>
+                    <li>Game: <span id="userPrefGame">-</span></li>
+                    <li>Anime: <span id="userPrefAnime">-</span></li>
+                </ul>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <!-- Chat View -->
+            <div id="chatView" class="view active-view">
+                <div class="chat-header">
+                    <span id="chatHeaderTitle">Yui</span>
+                    <button id="clearChatButton" title="Clear displayed messages">Clear Chat</button>
+                </div>
+                <div id="chatMessages" class="chat-messages">
+                    <!-- Messages will appear here -->
+                </div>
+                <div class="chat-input-area">
+                    <input type="text" id="userInput" placeholder="Say something...">
+                    <button id="sendMessageButton">Send</button>
+                </div>
+            </div>
+
+            <!-- Dashboard View -->
+            <div id="dashboardView" class="view">
+                <h1>Yui's Dashboard</h1>
+                <div class="dashboard-grid">
+                    <div class="chart-container">
+                        <h3>Affection Over Time</h3>
+                        <canvas id="affectionChart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h3>Trust Level</h3>
+                        <canvas id="trustChart"></canvas>
+                    </div>
+                    <div class="info-panel">
+                        <h3>Key Information</h3>
+                        <p>Total Interactions: <span id="totalInteractionsDisplay">0</span></p>
+                        <ul id="yuiKeyInfo">
+                            <!-- User's favorites and key events -->
+                        </ul>
+                    </div>
+                    <div class="info-panel">
+                        <h3>Relationship Milestones</h3>
+                        <ul id="relationshipMilestonesList">
+                            <!-- Milestones will be listed here -->
+                        </ul>
+                    </div>
+                    <div class="info-panel">
+                        <h3>User Sentiment</h3>
+                        <p id="userSentimentOverview">Analysis pending...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings View -->
+            <div id="settingsView" class="view">
+                <h1>Settings</h1>
+                <div class="settings-nav">
+                    <button id="generalSettingsTabButton" class="settings-nav-button active">General</button>
+                    <button id="logsSettingsTabButton" class="settings-nav-button">Logs</button>
+                </div>
+
+                <div id="generalSettingsView" class="settings-content active-settings-content">
+                    <div class="settings-section">
+                        <label for="themeSelector">Theme:</label>
+                        <select id="themeSelector">
+                            <option value="default-dark">Default Dark</option>
+                            <option value="light-mode">Light Mode</option>
+                            <option value="cyberpunk-dream">Cyberpunk Dream</option>
+                            <option value="oled-black">OLED Black</option>
+                            <option value="ocean-vibe">Ocean Vibe</option>
+                            <option value="retro-gaming">Retro Gaming</option>
+                            <option value="purple-haze">Purple Haze</option>
+                            <option value="stoners-paradise">Stoner's Paradise</option>
+                            <option value="green-leaf-vibes">Green Leaf Vibes</option>
+                        </select>
+                    </div>
+                    <div class="settings-section">
+                        <label for="resolutionSelector">Resolution:</label>
+                        <select id="resolutionSelector">
+                            <option value="1280x720">1280x720</option>
+                            <option value="1920x1080">1920x1080</option>
+                            <option value="1024x768">1024x768</option>
+                            <option value="1600x900">1600x900</option>
+                        </select>
+                    </div>
+                    <div class="settings-section">
+                        <label for="userNameInput">Your Name:</label>
+                        <input type="text" id="userNameInput" placeholder="Enter your name">
+                    </div>
+                    <div class="settings-section">
+                        <label for="apiKeyInput">Gemini API Key:</label>
+                        <input type="password" id="apiKeyInput" placeholder="Enter your Gemini API Key">
+                        <button id="saveApiKeyButton">Save Key</button>
+                    </div>
+                    <div class="settings-section">
+                        <button id="saveAllSettingsButton" class="primary-button">Save All Settings</button>
+                    </div>
+                    <div class="settings-section">
+                        <button id="resetDataButton" class="danger-button">Reset All Yui Data</button>
+                    </div>
+                </div>
+
+                <div id="logsSettingsView" class="settings-content">
+                    <h2>Application Logs</h2>
+                    <button id="refreshLogsButton">Refresh Logs</button>
+                    <pre id="logContentDisplay" class="log-display-area"></pre>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Use jsDelivr instead of unpkg for better reliability -->
+    <script src="https://cdn.jsdelivr.net/npm/compromise@14.14.4/builds/compromise.min.js"></script>
+    <script src="js/markdown-formatter.js"></script>
+    <script src="js/renderer.js"></script>
+</body>
+</html>

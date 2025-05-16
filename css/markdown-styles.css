@@ -1,0 +1,232 @@
+/*
+ * Markdown Formatting Styles
+ * This file defines the base styles for rendering Markdown content
+ * within the application. It includes styles for code blocks, inline code,
+ * lists, links, and basic text formatting.
+ *
+ * Theme-specific overrides are also included at the end of this file.
+ */
+
+/*
+ * Base Styles for Code Blocks
+ * Defines the appearance of multi-line code snippets.
+ */
+.code-block {
+  background-color: rgba(0, 0, 0, 0.2); /* Default darkish background */
+  border-radius: 4px; /* Slightly rounded corners */
+  padding: 8px 12px; /* Inner spacing */
+  margin: 8px 0; /* Outer spacing */
+  max-width: 100%; /* Ensure it doesn't overflow its container */
+  overflow-x: auto; /* Allow horizontal scrolling for long lines */
+  font-family: 'Consolas', 'Monaco', monospace; /* Monospaced font stack */
+  display: block; /* Ensure it takes up the full width */
+}
+
+/*
+ * Base Styles for Inline Code
+ * Defines the appearance of `code` snippets within a line of text.
+ * Excludes code elements that are part of a larger .code-block.
+ */
+.message code:not(.code-block code) {
+  background-color: rgba(0, 0, 0, 0.2); /* Consistent with code-block default */
+  border-radius: 3px; /* Slightly rounded corners */
+  padding: 2px 4px; /* Smaller padding for inline elements */
+  font-family: 'Consolas', 'Monaco', monospace; /* Monospaced font stack */
+  font-size: 0.9em; /* Slightly smaller than surrounding text */
+}
+
+/*
+ * Base Styles for Unordered and Ordered Lists
+ * Applies to ul and ol elements within a .message container.
+ */
+.message ul, .message ol {
+  padding-left: 20px; /* Indentation for list items */
+  margin: 8px 0; /* Standard vertical spacing */
+}
+
+/*
+ * Base Styles for List Items
+ * Applies to li elements within a .message container.
+ */
+.message li {
+  margin-bottom: 4px; /* Spacing between list items */
+}
+
+/*
+ * Base Styles for Links
+ * Applies to a elements within a .message container.
+ */
+.message a {
+  color: #00aeff; /* Default link color (bright blue) */
+  text-decoration: none; /* Remove underline by default */
+}
+
+.message a:hover {
+  text-decoration: underline; /* Add underline on hover for better UX */
+}
+
+/*
+ * Base Styles for Bold Text
+ * Applies to strong elements within a .message container.
+ */
+.message strong {
+  font-weight: bold;
+}
+
+/*
+ * Base Styles for Italic Text
+ * Applies to em elements within a .message container.
+ */
+.message em {
+  font-style: italic;
+}
+
+/*
+ * Base Styles for Strikethrough Text
+ * Applies to del elements within a .message container.
+ */
+.message del {
+  text-decoration: line-through;
+}
+
+/*
+ * Theme Override: Cyberpunk Dream
+ * Styles specific to the 'cyberpunk-dream' theme.
+ * These rules override the base styles when the body has the class 'theme-cyberpunk-dream'.
+ */
+body.theme-cyberpunk-dream .message a {
+  color: #ff00ff; /* Neon pink for links */
+  text-shadow: 0 0 2px #ff00ff; /* Subtle glow effect */
+}
+
+body.theme-cyberpunk-dream .code-block {
+  background-color: rgba(58, 47, 107, 0.5); /* Dark purple, semi-transparent */
+  border: 1px solid #00f0ff; /* Cyan border */
+  box-shadow: 0 0 5px rgba(0, 240, 255, 0.3); /* Cyan glow effect */
+}
+
+/*
+ * Theme Override: Light Mode
+ * Styles specific to the 'light-mode' theme.
+ */
+body.theme-light-mode .message a {
+  color: #0064b4; /* Darker blue for better readability on light backgrounds */
+}
+
+body.theme-light-mode .code-block,
+body.theme-light-mode .message code:not(.code-block code) {
+  background-color: rgba(0, 0, 0, 0.05); /* Very light grey background */
+  border: 1px solid rgba(0, 0, 0, 0.1); /* Subtle border */
+}
+
+/*
+ * Theme Override: OLED Black
+ * Styles optimized for OLED screens, focusing on true blacks and high contrast.
+ */
+body.theme-oled-black .message a {
+  color: #00bbff; /* Bright blue for high contrast against black */
+}
+body.theme-oled-black .code-block {
+  background-color: #111111; /* Very dark grey, close to black */
+  border: 1px solid #333333; /* Dark grey border */
+  box-shadow: 0 0 5px rgba(51, 51, 51, 0.3); /* Subtle dark glow */
+}
+body.theme-oled-black .message code:not(.code-block code) {
+  background-color: #1a1a1a; /* Dark grey for inline code */
+  border: 1px solid #333333; /* Consistent border color */
+}
+
+/*
+ * Theme Override: Ocean Vibe
+ * Styles evoking a calm, oceanic feel.
+ */
+body.theme-ocean-vibe .message a {
+  color: #ffc107; /* Sandy yellow/gold for links, like sunlight on water */
+  text-shadow: 0 0 2px #ffc107; /* Subtle glow */
+}
+body.theme-ocean-vibe .code-block {
+  background-color: rgba(0, 80, 115, 0.7); /* Deep teal, semi-transparent */
+  border: 1px solid #0099cc; /* Aqua border, like clear water */
+  box-shadow: 0 0 5px rgba(0, 153, 204, 0.3); /* Aqua glow */
+}
+body.theme-ocean-vibe .message code:not(.code-block code) {
+  background-color: rgba(0, 80, 115, 0.5); /* Lighter teal for inline code */
+  border: 1px solid #007799; /* Darker aqua border */
+}
+
+/*
+ * Theme Override: Retro Gaming
+ * Styles inspired by classic video game aesthetics.
+ */
+body.theme-retro-gaming .message a {
+  color: #ff3333; /* Bright red, common in retro UIs */
+  text-shadow: 0 0 2px #ff3333; /* Subtle glow */
+}
+body.theme-retro-gaming .code-block {
+  background-color: rgba(31, 64, 104, 0.8); /* Dark blue, like old console backgrounds */
+  border: 2px solid #ffc947; /* Yellow pixel-style border */
+  box-shadow: 0 0 5px rgba(255, 201, 71, 0.4); /* Yellow glow */
+  font-family: 'Press Start 2P', 'Courier New', monospace !important; /* Pixel font, !important to ensure override */
+}
+body.theme-retro-gaming .message code:not(.code-block code) {
+  background-color: rgba(228, 63, 90, 0.6); /* Reddish background for inline code */
+  border: 1px solid #ffc947; /* Consistent yellow border */
+  font-family: 'Press Start 2P', 'Courier New', monospace !important; /* Pixel font */
+  color: #ffff00; /* Yellow text for inline code, high contrast */
+  padding: 1px 3px; /* Adjusted padding for pixel font */
+  font-size: 0.8em; /* Slightly smaller for pixel aesthetic */
+}
+
+/*
+ * Theme Override: Purple Haze
+ * Styles with a predominantly purple and pink palette.
+ */
+body.theme-purple-haze .message a {
+  color: #f06292; /* Pink accent for links */
+  text-shadow: 0 0 2px #f06292; /* Subtle pink glow */
+}
+body.theme-purple-haze .code-block {
+  background-color: rgba(74, 0, 114, 0.7); /* Deep purple, semi-transparent */
+  border: 1px solid #ab47bc; /* Amethyst (lighter purple) border */
+  box-shadow: 0 0 5px rgba(171, 71, 188, 0.3); /* Amethyst glow */
+}
+body.theme-purple-haze .message code:not(.code-block code) {
+  background-color: rgba(123, 31, 162, 0.5); /* Medium purple for inline code */
+  border: 1px solid #ab47bc; /* Consistent amethyst border */
+}
+
+/*
+ * Theme Override: Stoner's Paradise
+ * Earthy tones, inspired by a relaxed, natural vibe. (Note: Theme name is for illustrative purposes)
+ */
+body.theme-stoners-paradise .message a {
+  color: #ffb300; /* Amber/Orange, like a warm glow */
+  text-shadow: 0 0 2px #ffb300;
+}
+body.theme-stoners-paradise .code-block {
+  background-color: rgba(59, 74, 32, 0.7); /* Dark olive green, semi-transparent */
+  border: 1px solid #6b8e23; /* Olive drab border */
+  box-shadow: 0 0 5px rgba(107, 142, 35, 0.3); /* Olive glow */
+}
+body.theme-stoners-paradise .message code:not(.code-block code) {
+  background-color: rgba(85, 107, 47, 0.5); /* Darker olive for inline code */
+  border: 1px solid #6b8e23; /* Consistent olive border */
+}
+
+/*
+ * Theme Override: Green Leaf Vibes
+ * Focuses on various shades of green, evoking nature and foliage.
+ */
+body.theme-green-leaf-vibes .message a {
+  color: #ffeb3b; /* Yellow accent, like sunlight on leaves */
+  text-shadow: 0 0 2px #ffeb3b;
+}
+body.theme-green-leaf-vibes .code-block {
+  background-color: rgba(46, 125, 50, 0.7); /* Forest green, semi-transparent */
+  border: 1px solid #4caf50; /* Bright, vibrant green border */
+  box-shadow: 0 0 5px rgba(76, 175, 80, 0.3); /* Green glow */
+}
+body.theme-green-leaf-vibes .message code:not(.code-block code) {
+  background-color: rgba(56, 142, 60, 0.5); /* Slightly lighter forest green for inline code */
+  border: 1px solid #4caf50; /* Consistent bright green border */
+}
