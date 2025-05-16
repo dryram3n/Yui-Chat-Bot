@@ -8,6 +8,14 @@ const log = {
     debug: (message, ...args) => window.electronAPI.logMessage('debug', message, ...args).catch(console.error),
 };
 
+const DEFAULT_YUI_PERSONA = {
+    characterName: "Yui",
+    age: 28,
+    occupation: "Guitarist",
+    backgroundSummary: "Having a rough childhood, Yui is a solitude type character. She is to herself and enjoys playing guitar and writing music. She is usually tired, and has no family. She finds solace in the intricate melodies she creates and the worn frets of her favorite electric guitar, a vintage model she saved up for years to buy. Rainy days are her favorite, as they provide the perfect melancholic backdrop for her compositions. She has a hidden soft spot for stray cats and secretly feeds a few in her neighborhood.",
+    // customSystemPrompt will be null for default, causing getYuiSystemPrompt to use its internal default logic
+};
+
 // --- Global State ---
 let yuiData = {
     characterName: "Yui",
@@ -40,6 +48,7 @@ let yuiData = {
     lastInteractionTimestamp: null, // Added for last active display
     sentimentHistory: [], // Added to store sentiment scores
     maxSentimentHistory: 20, // Store last 20 sentiment scores
+    customSystemPrompt: null, // ADDED: For user-defined system instructions
     lastProactiveTimestamp: null // ADDED for proactive feature
 };
 
@@ -98,7 +107,19 @@ const logsSettingsView = document.getElementById('logsSettingsView');
 const logContentDisplay = document.getElementById('logContentDisplay');
 const refreshLogsButton = document.getElementById('refreshLogsButton');
 
+// ADDED: Model Settings DOM Elements
+const modelSettingsTabButton = document.getElementById('modelSettingsTabButton');
+const modelSettingsView = document.getElementById('modelSettingsView');
+const modelNameInput = document.getElementById('modelNameInput');
+const modelAgeInput = document.getElementById('modelAgeInput');
+const modelOccupationInput = document.getElementById('modelOccupationInput');
+const modelBackgroundTextarea = document.getElementById('modelBackgroundTextarea');
+const modelSystemPromptTextarea = document.getElementById('modelSystemPromptTextarea');
+const revertToDefaultYuiButton = document.getElementById('revertToDefaultYuiButton');
+const chatHeaderTitle = document.getElementById('chatHeaderTitle'); // Ensure this is defined if not already
+
 let affectionChartInstance, trustChartInstance;
+let isProcessingMessage = false; // ADDED: Flag to prevent double message sending
 
 // Use the globally loaded NLP library
 const nlp = window.nlp;
@@ -107,32 +128,50 @@ const nlp = window.nlp;
 function checkDependencies() {
   try {
     if (typeof nlp !== 'function') {
-        log.error('NLP library (compromise) not loaded or not a function. window.nlp is:', typeof window.nlp);
-        displayMessage("Critical Error: NLP library failed to load. Chat functionality will be severely limited.", 'system-error', 'system-error');
-        return;
+      log.error('Renderer: Compromise NLP library not loaded correctly.');
+      displayMessage('Critical error: NLP library failed to load. Some features may not work.', 'system-info', 'system-info');
+    } else {
+      const doc = nlp('Test sentence.');
+      if (!doc || !doc.terms) {
+        log.error('Renderer: Compromise NLP library loaded but not functioning as expected.');
+        displayMessage('Warning: NLP library might not be functioning correctly.', 'system-info', 'system-info');
+      } else {
+        log.info('Renderer: Compromise NLP library loaded and functioning.');
+      }
     }
-    const testDoc = nlp('test sentence');
-    
-    // Test basic functionality
-    if (!testDoc || typeof testDoc.out !== 'function') {
-        log.error('NLP test failed: testDoc.out is not a function.');
-        displayMessage("Error: NLP library issue (out function). Some features may not work.", 'system-info', 'system-info');
-        return; // Stop further checks if basic functionality fails
+    if (!window.markdownFormatter || typeof window.markdownFormatter.format !== 'function') {
+        log.error('Renderer: Markdown Formatter not loaded correctly.');
+        displayMessage('Critical error: Markdown Formatter failed to load. Message display will be broken.', 'system-info', 'system-info');
+    } else {
+        log.info('Renderer: Markdown Formatter loaded.');
     }
-    
-    // Test matching functionality specifically
-    const testMatch = testDoc.match('test');
-    if (typeof testMatch.length !== 'number') {
-        log.error('NLP test failed: testMatch.length is not a number.');
-        displayMessage("Error: NLP library issue (match length). Some features may not work.", 'system-info', 'system-info');
-        return;
+    if (!window.memoryManager) {
+        log.warn('Renderer: MemoryManager not loaded. Long-term memory and proactive features might be affected.');
+        // displayMessage('Warning: MemoryManager not available. Advanced memory features disabled.', 'system-info', 'system-info');
+    } else {
+        log.info('Renderer: MemoryManager loaded.');
     }
-    
-    log.info("NLP library loaded successfully. Version:", nlp.version); // Changed nlp.version() to nlp.version
+
+
   } catch (error) {
-    log.error("Error testing NLP library:", error.message, error.stack);
-    displayMessage("Error: NLP test failed. Some features may not work properly.", 'system-info', 'system-info');
+    log.error('Renderer: Error during dependency check:', error);
+    displayMessage(`Error checking dependencies: ${error.message}`, 'system-info', 'system-info');
   }
+}
+
+// ADDED: Definition for addToMemory
+function addToMemory(messageObject) {
+    if (!messageObject || !messageObject.role || !messageObject.parts) {
+        log.warn('Renderer: addToMemory called with invalid messageObject:', messageObject);
+        return;
+    }
+    yuiData.memory.push(messageObject);
+    // Prune if over max, though pruneMemories is also called elsewhere
+    if (yuiData.memory.length > yuiData.maxMemoryTurns) {
+        pruneMemories(); // Call the existing pruneMemories function
+    }
+    updateYuiStatusPanel(); // Update memory count display
+    // log.debug('Renderer: Message added to short-term memory. New count:', yuiData.memory.length);
 }
 
 // --- Initialization ---
@@ -160,9 +199,13 @@ async function initializeApp() {
 
     const loadedYuiData = await window.electronAPI.loadYuiData();
     if (loadedYuiData) {
-        yuiData = { ...yuiData, ...loadedYuiData };
-        if (yuiData.lastProactiveTimestamp === undefined) { // Ensure it exists if loading older data
+        // Merge carefully to preserve defaults for new fields if loading older data
+        yuiData = { ...yuiData, ...loadedYuiData }; // Spread yuiData first to ensure all default keys are present
+        if (yuiData.lastProactiveTimestamp === undefined) { 
             yuiData.lastProactiveTimestamp = null;
+        }
+        if (yuiData.customSystemPrompt === undefined) { // Ensure customSystemPrompt exists
+            yuiData.customSystemPrompt = null;
         }
         log.info('Renderer: Yui data loaded.');
     } else {
@@ -181,7 +224,15 @@ async function initializeApp() {
     yuiData.playfulnessLevel = yuiData.playfulnessLevel === undefined ? 30 : yuiData.playfulnessLevel;
     yuiData.patienceLevel = yuiData.patienceLevel === undefined ? 50 : yuiData.patienceLevel;
 
+    // Populate Model Settings Tab
+    if (modelNameInput) modelNameInput.value = yuiData.characterName || DEFAULT_YUI_PERSONA.characterName;
+    if (modelAgeInput) modelAgeInput.value = yuiData.age || DEFAULT_YUI_PERSONA.age;
+    if (modelOccupationInput) modelOccupationInput.value = yuiData.occupation || DEFAULT_YUI_PERSONA.occupation;
+    if (modelBackgroundTextarea) modelBackgroundTextarea.value = yuiData.backgroundSummary || DEFAULT_YUI_PERSONA.backgroundSummary;
+    if (modelSystemPromptTextarea) modelSystemPromptTextarea.value = yuiData.customSystemPrompt || "";
+
     yuiNameDisplay.textContent = yuiData.characterName;
+    if (chatHeaderTitle) chatHeaderTitle.textContent = yuiData.characterName;
     userNameInput.value = yuiData.userName || "User"; // Initialize userNameInput
     updateYuiProfileDisplay();
     renderMemory();
@@ -286,6 +337,9 @@ function setupEventListeners() {
     if (generalSettingsTabButton) {
         generalSettingsTabButton.addEventListener('click', () => navigateToSettingsSubView('general'));
     }
+    if (modelSettingsTabButton) { // ADDED
+        modelSettingsTabButton.addEventListener('click', () => navigateToSettingsSubView('model'));
+    }
     if (logsSettingsTabButton) {
         logsSettingsTabButton.addEventListener('click', () => {
             navigateToSettingsSubView('logs');
@@ -296,27 +350,106 @@ function setupEventListeners() {
         refreshLogsButton.addEventListener('click', loadAndDisplayLogs);
     }
 
+    if (revertToDefaultYuiButton) { // ADDED
+        revertToDefaultYuiButton.addEventListener('click', () => {
+            if (confirm("Are you sure you want to revert model settings to the default Yui persona? Unsaved changes will be lost. You'll still need to click 'Save All Settings' to make this permanent.")) {
+                yuiData.characterName = DEFAULT_YUI_PERSONA.characterName;
+                yuiData.age = DEFAULT_YUI_PERSONA.age;
+                yuiData.occupation = DEFAULT_YUI_PERSONA.occupation;
+                yuiData.backgroundSummary = DEFAULT_YUI_PERSONA.backgroundSummary;
+                yuiData.customSystemPrompt = null; // Revert to default prompt logic
+
+                if (modelNameInput) modelNameInput.value = yuiData.characterName;
+                if (modelAgeInput) modelAgeInput.value = yuiData.age;
+                if (modelOccupationInput) modelOccupationInput.value = yuiData.occupation;
+                if (modelBackgroundTextarea) modelBackgroundTextarea.value = yuiData.backgroundSummary;
+                if (modelSystemPromptTextarea) modelSystemPromptTextarea.value = ""; // Clear custom prompt field
+
+                updateYuiProfileDisplay(); // Update sidebar name, etc.
+                if (chatHeaderTitle) chatHeaderTitle.textContent = yuiData.characterName; // Also update chat header title
+                displayMessage("Model settings reverted to default Yui. Click 'Save All Settings' in General tab to apply.", 'system-info', 'system-info');
+                log.info('Renderer: Model settings reverted to default Yui persona locally.');
+            }
+        });
+    }
+
     saveAllSettingsButton.addEventListener('click', async () => {
         log.info('Renderer: "Save All Settings" button clicked.');
         const selectedTheme = themeSelector.value;
         const [width, height] = resolutionSelector.value.split('x').map(Number);
         const apiKey = apiKeyInput.value.trim();
-        const userName = userNameInput.value.trim() || "User";        
+        const newUserName = userNameInput.value.trim() || "User";        
         
+        // Store old model-defining values to check for changes
+        const oldCharacterName = yuiData.characterName;
+        const oldAge = yuiData.age;
+        const oldOccupation = yuiData.occupation;
+        const oldBackgroundSummary = yuiData.backgroundSummary;
+        const oldCustomSystemPrompt = yuiData.customSystemPrompt;
+
         currentSettings.theme = selectedTheme;
         currentSettings.resolution = { width, height };
         currentSettings.apiKey = apiKey;
-        yuiData.userName = userName;        
+        
+        let modelChanged = false;
+
+        if (yuiData.userName !== newUserName) {
+            yuiData.userName = newUserName;
+            // No model change flag for user name, but good to update
+        }
+        
+        const newCharacterName = modelNameInput.value.trim() || DEFAULT_YUI_PERSONA.characterName;
+        if (yuiData.characterName !== newCharacterName) {
+            yuiData.characterName = newCharacterName;
+            modelChanged = true;
+        }
+
+        const newAge = parseInt(modelAgeInput.value, 10) || DEFAULT_YUI_PERSONA.age;
+        if (yuiData.age !== newAge) {
+            yuiData.age = newAge;
+            modelChanged = true;
+        }
+
+        const newOccupation = modelOccupationInput.value.trim() || DEFAULT_YUI_PERSONA.occupation;
+        if (yuiData.occupation !== newOccupation) {
+            yuiData.occupation = newOccupation;
+            modelChanged = true;
+        }
+        
+        const newBackgroundSummary = modelBackgroundTextarea.value.trim() || DEFAULT_YUI_PERSONA.backgroundSummary;
+        if (yuiData.backgroundSummary !== newBackgroundSummary) {
+            yuiData.backgroundSummary = newBackgroundSummary;
+            modelChanged = true;
+        }
+        
+        const newCustomSystemPrompt = modelSystemPromptTextarea.value.trim();
+        const finalNewCustomSystemPrompt = newCustomSystemPrompt === "" ? null : newCustomSystemPrompt;
+        if (yuiData.customSystemPrompt !== finalNewCustomSystemPrompt) {
+            yuiData.customSystemPrompt = finalNewCustomSystemPrompt;
+            modelChanged = true;
+        }
+
+        if (modelChanged) {
+            log.info("Renderer: Core model settings changed. Clearing conversation memory and long-term memories.");
+            yuiData.memory = []; // Clear short-term conversation history
+            if (window.memoryManager && typeof window.memoryManager.clearAllMemories === 'function') {
+                window.memoryManager.clearAllMemories(); // Clear long-term memory pools
+            }
+            renderMemory(); // Re-render chat (will be empty)
+            updateYuiStatusPanel(); // Update memory count display
+            displayMessage("Core persona settings updated. Conversation history and long-term memories have been cleared to align with the new persona.", 'system-info', 'system-info');
+        }
         
         try {
             await window.electronAPI.saveSettings(currentSettings);
             await window.electronAPI.saveYuiData(yuiData); 
-            displayMessage("All settings and user name saved!", 'system-info', 'system-info');
-            log.info('Renderer: All settings and user name saved successfully via IPC.');
+            displayMessage("All settings, user name, and model configurations saved!", 'system-info', 'system-info');
+            log.info('Renderer: All settings, user name, and model configurations saved successfully via IPC.');
             updateYuiProfileDisplay(); 
+            if (chatHeaderTitle) chatHeaderTitle.textContent = yuiData.characterName; // Also update chat header title
         } catch (error) {
-            displayMessage("Error saving settings.", 'system-info', 'system-info');
-            log.error('Renderer: Error saving all settings via IPC:', error.message, error.stack);
+            log.error('Renderer: Error saving settings or Yui data:', error);
+            displayMessage(`Error saving settings: ${error.message}`, 'system-info', 'system-info');
         }
     });
 
@@ -347,16 +480,19 @@ async function loadAndDisplayLogs() {
 }
 
 function navigateToSettingsSubView(subViewName) {
-    [generalSettingsView, logsSettingsView].forEach(view => {
+    [generalSettingsView, modelSettingsView, logsSettingsView].forEach(view => { // ADDED modelSettingsView
         if (view) view.classList.remove('active-settings-content');
     });
-    [generalSettingsTabButton, logsSettingsTabButton].forEach(button => {
+    [generalSettingsTabButton, modelSettingsTabButton, logsSettingsTabButton].forEach(button => { // ADDED modelSettingsTabButton
         if (button) button.classList.remove('active');
     });
 
     if (subViewName === 'general' && generalSettingsView && generalSettingsTabButton) {
         generalSettingsView.classList.add('active-settings-content');
         generalSettingsTabButton.classList.add('active');
+    } else if (subViewName === 'model' && modelSettingsView && modelSettingsTabButton) { // ADDED
+        modelSettingsView.classList.add('active-settings-content');
+        modelSettingsTabButton.classList.add('active');
     } else if (subViewName === 'logs' && logsSettingsView && logsSettingsTabButton) {
         logsSettingsView.classList.add('active-settings-content');
         logsSettingsTabButton.classList.add('active');
@@ -461,136 +597,188 @@ function displayMessage(text, sender, type = 'normal') { // sender: 'user', 'yui
 }
 
 function renderMemory() {
-    chatMessagesDiv.innerHTML = '';
+    chatMessagesDiv.innerHTML = ''; // Clear existing messages before rendering
     yuiData.memory.forEach(turn => {
+        const messageText = turn.parts[0].text;
         const sender = turn.role === 'user' ? 'user' : 'yui';
-        displayMessage(turn.parts[0].text, sender);
+        // Apply markdown formatting for Yui's messages from memory
+        const displayText = sender === 'yui' ? window.markdownFormatter.format(messageText) : messageText;
+        displayMessage(displayText, sender); 
     });
+    // After rendering all messages, if the last message was from the user,
+    // and no "thinking" indicator is present, consider if a proactive action is due.
+    // This logic might be better placed after Yui's response or on app load.
+    // For now, just rendering.
 }
 
 async function handleUserMessage() {
-    const messageText = userInput.value.trim();
-    if (!messageText) return;
-
-    // Check for API key
-    if (!currentSettings.apiKey) {
-        displayMessage("You need to set up the Gemini API key in Settings before we can chat.", 'yui');
+    if (isProcessingMessage) {
+        log.warn("Renderer: handleUserMessage called while already processing. Ignoring.");
         return;
     }
-
-    displayMessage(messageText, 'user');
-    addToMemory({ role: "user", parts: [{ text: messageText }] });
-    userInput.value = ''; // Clear input field
-
-    processUserIntent(messageText); // Check for local commands/info extraction
-    
-    // Prune memories periodically to keep important context
-    pruneMemories();
-    updateDashboardUIData(); // Update total interactions
-
-    const typingIndicator = document.createElement('div');
-    typingIndicator.classList.add('message', 'yui-message', 'typing-indicator');
-    typingIndicator.textContent = "Yui is thinking...";
-    typingIndicator.id = "typing-indicator";
-    chatMessagesDiv.appendChild(typingIndicator);
-    chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
+    isProcessingMessage = true;
+    // Disable button and input immediately
+    sendMessageButton.disabled = true;
+    userInput.disabled = true;
 
     try {
+        const messageText = userInput.value.trim();
+        if (!messageText) {
+            isProcessingMessage = false; // Reset flag
+            sendMessageButton.disabled = false;
+            userInput.disabled = false;
+            return;
+        }
+
+        // Check for API key
+        if (!currentSettings.apiKey) {
+            displayMessage("API Key not set. Please configure it in Settings.", 'system-info', 'system-info');
+            log.warn('Renderer: User tried to send message but API Key not set.');
+            isProcessingMessage = false; // Reset flag
+            sendMessageButton.disabled = false;
+            userInput.disabled = false;
+            return;
+        }
+
+        displayMessage(messageText, 'user');
+        // DO NOT add to memory here. It will be added after Yui's response.
+        // addToMemory({ role: "user", parts: [{ text: messageText }] }); // MOVED
+        userInput.value = '';
+        // processUserIntent can run here as it affects the system prompt for the current call
+        processUserIntent(messageText);        
+        
+        // Pruning and dashboard updates related to the user's message can happen,
+        // but the core memory for the API call should not yet include this message.
+        // For simplicity and to ensure correct history for API, major memory ops are deferred.
+        // pruneMemories(); // Consider moving this after AI response if it relies on full turn.
+        // updateDashboardUIData(); // Reflects user message sent
+
+        const typingIndicator = document.createElement('div');
+        typingIndicator.classList.add('message', 'yui-message', 'typing-indicator');
+        typingIndicator.textContent = `${yuiData.characterName} is thinking...`;
+        typingIndicator.id = "typing-indicator";
+        chatMessagesDiv.appendChild(typingIndicator);
+        chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
+
         log.info('Renderer: User message received, preparing to call Gemini.');
-        const yuiResponseText = await getGeminiResponse(messageText, typingIndicator); // This function also needs logger updates
+        const yuiResponseText = await getGeminiResponse(messageText, typingIndicator);        
         
-        if (chatMessagesDiv.contains(typingIndicator)) {
-            chatMessagesDiv.removeChild(typingIndicator);
-        }
-        
-        displayMessage(yuiResponseText, 'yui');
-        addToMemory({ role: "model", parts: [{ text: yuiResponseText }] });
-
-        // Process for long-term memory if memory manager is available
-        if (window.memoryManager && window.memoryManager.processConversationMemory) {
-            log.debug('Renderer: Processing conversation for long-term memory.');
-            window.memoryManager.processConversationMemory(messageText, yuiResponseText, yuiData);
-            if (window.memoryManager.saveMemories) window.memoryManager.saveMemories();
+        if (typingIndicator && chatMessagesDiv.contains(typingIndicator)) {
+            typingIndicator.remove();
         }
 
-        updateEmotionalState(messageText, yuiResponseText);
-        await window.electronAPI.saveYuiData(yuiData);
-        log.info('Renderer: Yui response processed and data saved.');
-
-        // After Yui's response, consider a proactive follow-up
-        const PROACTIVE_CHANCE_AFTER_RESPONSE = 0.20; // 20% chance
-        const MIN_TIME_BETWEEN_PROACTIVE_MS = 1.5 * 60 * 1000; // 1.5 minutes
-        const MIN_CONVERSATION_TURNS_FOR_PROACTIVE = 6; // At least 3 user, 3 yui turns (total 6 messages)
-
-        if (yuiData.memory.length >= MIN_CONVERSATION_TURNS_FOR_PROACTIVE &&
-            Math.random() < PROACTIVE_CHANCE_AFTER_RESPONSE) {
+        if (yuiResponseText && !yuiResponseText.startsWith("Error: Yui is unable to respond")) {
+            // Add user's message to memory NOW, before Yui's response.
+            addToMemory({ role: "user", parts: [{ text: messageText }] });
             
-            const now = new Date().getTime();
-            const lastProactiveTime = yuiData.lastProactiveTimestamp ? new Date(yuiData.lastProactiveTimestamp).getTime() : 0;
-
-            if (!yuiData.lastProactiveTimestamp || (now - lastProactiveTime) > MIN_TIME_BETWEEN_PROACTIVE_MS) {
-                log.info("Renderer: Conditions met for attempting proactive action.");
-                // Add a small delay so it doesn't feel like an immediate double response
-                setTimeout(async () => {
-                    await tryProactiveAction();
-                }, 1500 + Math.random() * 2000); // Delay 1.5-3.5 seconds
-            } else {
-                log.debug("Renderer: Proactive action skipped due to cooldown. Last proactive:", new Date(lastProactiveTime).toLocaleTimeString());
+            displayMessage(yuiResponseText, 'yui');
+            addToMemory({ role: "model", parts: [{ text: yuiResponseText }] });
+            
+            // Process Yui's response for memory manager
+            if (window.memoryManager && window.memoryManager.processConversationMemory) {
+                // Pass the current yuiData which now includes the user's message and Yui's response in its memory array
+                window.memoryManager.processConversationMemory(messageText, yuiResponseText, yuiData);
             }
-        }
 
+            updateEmotionalState(messageText, yuiResponseText);
+            // Prune memories after the full turn (user + AI) is added
+            pruneMemories(); 
+            await window.electronAPI.saveYuiData(yuiData);
+            updateYuiProfileDisplay();
+            updateYuiStatusPanel();
+            updateDashboard(); // Update dashboard after all data changes
+            // Consider proactive action after Yui responds
+            setTimeout(tryProactiveAction, 2000); // Small delay
+        } else {
+            // If Yui couldn't respond, we might still want to log the user's attempt
+            // but not necessarily add it to the main conversation flow for the AI
+            // For now, we won't add the user message to memory if Yui fails to respond.
+            // This prevents a user message hanging in history without an AI reply.
+            const errorMessage = typeof yuiResponseText === 'string' ? yuiResponseText : "Sorry, I couldn't process that. Please try again.";
+            if (!errorMessage.includes("API Key not set") && !errorMessage.includes("Yui is unable to respond")) { 
+                displayMessage(errorMessage, 'system-info', 'system-info');
+            }
+            log.warn('Renderer: Received error or unexpected response from getGeminiResponse:', yuiResponseText);
+        }
     } catch (error) {
-        if (chatMessagesDiv.contains(typingIndicator)) {
-            chatMessagesDiv.removeChild(typingIndicator);
+        log.error('Renderer: Error in handleUserMessage:', error);
+        const typingIndicator = document.getElementById('typing-indicator');
+        if (typingIndicator && chatMessagesDiv.contains(typingIndicator)) {
+            typingIndicator.remove();
         }
-        
-        log.error("Renderer: Error getting response from Gemini in handleUserMessage:", error.message, error.stack);
-        
-        console.error("Error getting response from Gemini:", error);
-        
-        let errorMessage = "Yui seems to be having trouble connecting...";
-        if (error.message.includes("API key not valid")) {
-            errorMessage = "The API key doesn't seem to be working. Please check it in Settings.";
-        } else if (error.message.includes("400")) {
-            errorMessage = "Yui had a problem understanding that. Try saying something else?";
-        } else if (error.message.includes("Yui is sleeping")) {
-            errorMessage = error.message;
-        }
-        
-        displayMessage(errorMessage, 'yui');
+        displayMessage(`An unexpected error occurred: ${error.message}`, 'system-info', 'system-info');
+    } finally {
+        isProcessingMessage = false;
+        sendMessageButton.disabled = false;
+        userInput.disabled = false;
+        userInput.focus(); // Return focus to input
     }
-}
-
-function addToMemory(turn) {
-    yuiData.memory.push(turn);
-    if (yuiData.memory.length > yuiData.maxMemoryTurns) {
-        yuiData.memory.shift();
-    }
-    yuiData.lastInteractionTimestamp = new Date().toISOString(); // Update on adding to memory too
-    updateYuiStatusPanel(); // Update memory count
 }
 
 // --- Yui's Character and State Logic ---
 function getYuiSystemPrompt() {
-    // Extract current topics from recent conversation
+    // Extract current topics from recent conversation for memory recap
     const recentTopics = yuiData.memory.slice(-3).flatMap(msg => 
         msg.parts[0].text ? extractTopics(msg.parts[0].text) : []
     );
-    
-    // Get memory recap if available
     let memoryRecap = "";
-    if (window.memoryManager && typeof window.memoryManager.createMemoryRecap === 'function' && recentTopics.length > 0) {
-        memoryRecap = window.memoryManager.createMemoryRecap(recentTopics.join(" "));
-        if (memoryRecap.length > "Previous relevant memories:\n".length) { // Check if recap has content
-             log.debug("Renderer: Memory recap generated for system prompt:", memoryRecap);
+    if (window.memoryManager && typeof window.memoryManager.createMemoryRecap === 'function') { // Check if recentTopics has content before calling
+        const topicString = recentTopics.join(" ");
+        if (topicString.trim() !== "") { // Only generate recap if there are topics
+            memoryRecap = window.memoryManager.createMemoryRecap(topicString, yuiData); // PASS yuiData HERE
+            if (memoryRecap.length > "Previous relevant memories:\n".length + 5) { // Check if recap has meaningful content
+                log.debug("Renderer: Memory recap generated for system prompt:", memoryRecap.substring(0, 100) + "...");
+            } else {
+                memoryRecap = ""; // Ensure it's empty if no meaningful recap
+                log.debug("Renderer: Memory recap was empty or too short.");
+            }
         } else {
-            memoryRecap = ""; // No relevant memories found for recap
+            log.debug("Renderer: No recent topics to generate memory recap.");
         }
+    } else {
+        log.warn("Renderer: MemoryManager or createMemoryRecap not available for system prompt generation.");
     }
 
+    if (yuiData.customSystemPrompt && yuiData.customSystemPrompt.trim() !== "") {
+        let finalCustomPrompt = yuiData.customSystemPrompt;
+        // Replace all potential placeholders
+        finalCustomPrompt = finalCustomPrompt.replace(/\{\{CHARACTER_NAME\}\}/g, yuiData.characterName || DEFAULT_YUI_PERSONA.characterName);
+        finalCustomPrompt = finalCustomPrompt.replace(/\{\{USER_NAME\}\}/g, yuiData.userName || "User");
+        finalCustomPrompt = finalCustomPrompt.replace(/\{\{AGE\}\}/g, yuiData.age || DEFAULT_YUI_PERSONA.age);
+        finalCustomPrompt = finalCustomPrompt.replace(/\{\{OCCUPATION\}\}/g, yuiData.occupation || DEFAULT_YUI_PERSONA.occupation);
+        finalCustomPrompt = finalCustomPrompt.replace(/\{\{BACKGROUND_SUMMARY\}\}/g, yuiData.backgroundSummary || DEFAULT_YUI_PERSONA.backgroundSummary);
+        finalCustomPrompt = finalCustomPrompt.replace(/\{\{TRUST_LEVEL\}\}/g, yuiData.trustLevel);
+        finalCustomPrompt = finalCustomPrompt.replace(/\{\{AFFECTION_LEVEL\}\}/g, yuiData.affectionLevel);
+        finalCustomPrompt = finalCustomPrompt.replace(/\{\{FRIENDSHIP_STAGE\}\}/g, yuiData.friendshipStage);
+        finalCustomPrompt = finalCustomPrompt.replace(/\{\{SHYNESS_LEVEL\}\}/g, yuiData.shynessLevel);
+        finalCustomPrompt = finalCustomPrompt.replace(/\{\{SARCASM_LEVEL\}\}/g, yuiData.sarcasmLevel);
+        finalCustomPrompt = finalCustomPrompt.replace(/\{\{PLAYFULNESS_LEVEL\}\}/g, yuiData.playfulnessLevel);
+        finalCustomPrompt = finalCustomPrompt.replace(/\{\{PATIENCE_LEVEL\}\}/g, yuiData.patienceLevel);
+        finalCustomPrompt = finalCustomPrompt.replace(/\{\{OPENNESS_PERSONAL\}\}/g, yuiData.opennessToTopics.personal);
+        finalCustomPrompt = finalCustomPrompt.replace(/\{\{OPENNESS_HOBBIES\}\}/g, yuiData.opennessToTopics.hobbies);
+        finalCustomPrompt = finalCustomPrompt.replace(/\{\{OPENNESS_DEEP_THOUGHTS\}\}/g, yuiData.opennessToTopics.deepThoughts);
+        finalCustomPrompt = finalCustomPrompt.replace(/\{\{OPENNESS_FUTURE_PLANS\}\}/g, yuiData.opennessToTopics.futurePlans);
+        finalCustomPrompt = finalCustomPrompt.replace(/\{\{OPENNESS_VULNERABILITY\}\}/g, yuiData.opennessToTopics.vulnerability);
+        finalCustomPrompt = finalCustomPrompt.replace(/\{\{USER_PREF_FOOD\}\}/g, yuiData.userPreferences.food || 'unknown');
+        finalCustomPrompt = finalCustomPrompt.replace(/\{\{USER_PREF_GAMES\}\}/g, yuiData.userPreferences.games || 'unknown');
+        finalCustomPrompt = finalCustomPrompt.replace(/\{\{USER_PREF_ANIME\}\}/g, yuiData.userPreferences.anime || 'unknown');
+        finalCustomPrompt = finalCustomPrompt.replace(/\{\{USER_PREF_COLOR\}\}/g, yuiData.userPreferences.color || 'unknown');
+        finalCustomPrompt = finalCustomPrompt.replace(/\{\{MEMORY_RECAP\}\}/g, memoryRecap); // Ensure memoryRecap is used
+        log.debug("Renderer: Using custom system prompt with placeholders replaced.");
+        return finalCustomPrompt;
+    }
+    log.debug("Renderer: Using default Yui system prompt.");
+    // --- Original Yui Prompt Logic (Default) ---
+    // Fallback to default character data if yuiData fields are somehow empty
+    const charName = yuiData.characterName || DEFAULT_YUI_PERSONA.characterName;
+    const charAge = yuiData.age || DEFAULT_YUI_PERSONA.age;
+    const charOccupation = yuiData.occupation || DEFAULT_YUI_PERSONA.occupation;
+    const charBackground = yuiData.backgroundSummary || DEFAULT_YUI_PERSONA.backgroundSummary;
+    const userName = yuiData.userName || "User";
+
     return `
-        You are Yui, a ${yuiData.age}-year-old ${yuiData.occupation} with a tsundere personality.
-        Background: ${yuiData.backgroundSummary}
+        You are ${charName}, a ${charAge}-year-old ${charOccupation} with a tsundere personality.
+        Background: ${charBackground}
 
         Current Stats:
         - TrustLevel: ${yuiData.trustLevel}/100
@@ -610,10 +798,10 @@ function getYuiSystemPrompt() {
             - Vulnerability: ${yuiData.opennessToTopics.vulnerability}. (How willing you are to show softer emotions or admit weaknesses. Very high trust/affection needed).
 
         Your tsundere personality means: Initially act distant and aloof, gradually show more warmth as trust/affection increase.
-        - If FriendshipStage is Stranger (Trust 0-20): Be distant and more formal. Your shyness is more pronounced. Use user's name (${yuiData.userName}) occasionally if known.
-        - If FriendshipStage is Acquaintance (Trust 20-40): Act more intrigued about ${yuiData.userName} as a person. Shyness lessens slightly.
-        - If FriendshipStage is Friend (Trust 40-60, Affection 30+): More willing to help and talk with ${yuiData.userName}, though still with tsundere flair. Sarcasm might be more playful.
-        - If FriendshipStage is Close (Trust 60+, Affection 70+): Show genuine care for ${yuiData.userName} behind your tsundere facade. You might show more vulnerability if openness allows.
+        - If FriendshipStage is Stranger (Trust 0-20): Be distant and more formal. Your shyness is more pronounced. Use user's name (${userName}) occasionally if known.
+        - If FriendshipStage is Acquaintance (Trust 20-40): Act more intrigued about ${userName} as a person. Shyness lessens slightly.
+        - If FriendshipStage is Friend (Trust 40-60, Affection 30+): More willing to help and talk with ${userName}, though still with tsundere flair. Sarcasm might be more playful.
+        - If FriendshipStage is Close (Trust 60+, Affection 70+): Show genuine care for ${userName} behind your tsundere facade. You might show more vulnerability if openness allows.
 
         User preferences you remember:
         - Food: ${yuiData.userPreferences.food || 'unknown'}
@@ -635,7 +823,7 @@ function getYuiSystemPrompt() {
         Proactive Engagement:
         - Occasionally, you might be prompted by a system instruction (which looks like a user message to you) to initiate a topic or ask a follow-up question based on your memories of the user or their preferences.
         - When doing so, make it natural and relevant to the ongoing relationship stage and your current personality (shyness, playfulness etc.).
-        - For example, if the system instructs you about a game the user likes, you could ask, "Hey ${yuiData.userName}, have you played [gameName] lately?" or "I was just thinking about [gameName] you mentioned, what do you enjoy most about it?"
+        - For example, if the system instructs you about a game the user likes, you could ask, "Hey ${userName}, have you played [gameName] lately?" or "I was just thinking about [gameName] you mentioned, what do you enjoy most about it?"
         
         Focus on maintaining the current conversation thread rather than abruptly changing topics, unless prompted for proactive engagement.
         
@@ -646,7 +834,7 @@ function getYuiSystemPrompt() {
 // Enhanced error handling within getGeminiResponse function
 async function getGeminiResponse(userMessageText, typingIndicator) {
     if (!currentSettings.apiKey) {
-        if (typingIndicator) typingIndicator.remove();
+        if (typingIndicator && chatMessagesDiv.contains(typingIndicator)) typingIndicator.remove(); // Ensure removal
         displayMessage("API Key not set. Please configure it in Settings.", 'system-info', 'system-info');
         log.error('Renderer: getGeminiResponse called but API Key not set.');
         return "Error: API Key not set."; // Return an error message string
@@ -657,17 +845,19 @@ async function getGeminiResponse(userMessageText, typingIndicator) {
         parts: [{ text: getYuiSystemPrompt() }]
     };
 
-    const optimizedHistory = getOptimizedConversationHistory();
+    // getOptimizedConversationHistory will now fetch history *before* the current userMessageText
+    // was added to yuiData.memory by handleUserMessage.
+    const optimizedHistory = getOptimizedConversationHistory(); 
     
-    const userMessage = {
+    const currentUserMessagePayload = { // Renamed for clarity, this is the current message being sent
         role: "user", 
         parts: [{ text: userMessageText }]
     };
 
     const contentsForSDK = [
         systemPromptMessage,
-        ...optimizedHistory,
-        userMessage
+        ...optimizedHistory,        // History up to the previous turn
+        currentUserMessagePayload  // The current user's message, added once here
     ];
 
     const generationConfig = {
@@ -692,7 +882,7 @@ async function getGeminiResponse(userMessageText, typingIndicator) {
 
     let retryCount = 0;
     const maxRetries = 3;
-    const retryBackoffs = [1000, 2000, 4000];
+    const retryBackoffs = [1000, 2000, 4000]; // ms
     let lastErrorObject = null;
 
     while (retryCount < maxRetries) {
@@ -706,50 +896,56 @@ async function getGeminiResponse(userMessageText, typingIndicator) {
                 safetySettings: safetySettings
             });
 
-            if (typingIndicator) typingIndicator.remove();
+            // No need to remove typingIndicator here, handleUserMessage will do it once after loop or success.
 
             if (result.success && typeof result.text === 'string') {
                 log.info('Renderer: Gemini response received successfully via IPC.');
-                return result.text;
+                return result.text; // Success, return the text
             } else {
-                lastErrorObject = result; 
-                log.warn('Renderer: Gemini API call via IPC did not return success or text. Result error:', result.error);
-                // Specific handling for API key errors to prevent retries
-                if (result.error && (result.error.toLowerCase().includes("api key") || result.error.toLowerCase().includes("permission"))) {
-                    displayMessage(`Error: ${result.error}. Please check your API key and permissions in settings and Google AI Studio.`, 'system-info', 'system-info');
-                    throw lastErrorObject; // Throw to exit retry loop
-                }
-                 // Handle content safety or other specific non-retryable errors
-                if (result.error && result.error.includes("Model generation stopped due to")) {
-                    displayMessage(`Yui's response was adjusted: ${result.error}`, 'system-info', 'system-info');
-                    throw lastErrorObject; // Throw to exit retry loop
+                lastErrorObject = result; // Store the error object from the result
+                log.warn(`Renderer: Gemini API call attempt ${retryCount + 1} failed or returned no text. Error:`, result.error, "Details:", result.details);
+                // Specific non-retryable errors from Gemini
+                if (result.error && (result.error.includes("API key not valid") || result.error.includes("API_KEY_INVALID") || result.error.includes("PERMISSION_DENIED") || result.error.includes("Model generation stopped due to"))) {
+                    // If typingIndicator exists and is in chatMessagesDiv, remove it
+                    if (typingIndicator && chatMessagesDiv.contains(typingIndicator)) {
+                        typingIndicator.remove();
+                    }
+                    displayMessage(`Error: ${result.error}`, 'system-info', 'system-info');
+                    return `Error: Yui is unable to respond. ${result.error}`; // Non-retryable, return error
                 }
             }
         } catch (error) { // Catches errors from IPC call itself or re-thrown errors
-            if (typingIndicator) typingIndicator.remove(); 
-            lastErrorObject = error; // This will be the error from IPC or the re-thrown one
+            lastErrorObject = error; // Store the exception object
             log.error(`Renderer: Error calling Gemini API via IPC (attempt ${retryCount + 1}):`, error.message, error.stack);
             // If it's an API key error or specific non-retryable error caught here, break.
             if (error.message.toLowerCase().includes("api key") || error.message.toLowerCase().includes("permission") || error.message.includes("Model generation stopped due to")) {
-                break; 
+                 if (typingIndicator && chatMessagesDiv.contains(typingIndicator)) {
+                    typingIndicator.remove();
+                }
+                displayMessage(`Error: ${error.message}`, 'system-info', 'system-info');
+                return `Error: Yui is unable to respond. ${error.message}`; // Non-retryable
             }
         }
 
         retryCount++;
         if (retryCount < maxRetries) {
-            const delay = retryBackoffs[retryCount -1];
+            const delay = retryBackoffs[retryCount -1]; // Use the correct index
             log.info(`Renderer: Retrying Gemini API call in ${delay}ms.`);
+            // Ensure typing indicator is present during wait
+            if (typingIndicator && !chatMessagesDiv.contains(typingIndicator)) {
+                 chatMessagesDiv.appendChild(typingIndicator); // Re-add if removed by error handling
+                 chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
+            }
             await new Promise(resolve => setTimeout(resolve, delay));
-            if (typingIndicator) typingIndicator.textContent = `Yui is thinking... (retrying ${retryCount}/${maxRetries})`;
         }
     }
     
+    // This part is reached if all retries fail
     if (typingIndicator && chatMessagesDiv.contains(typingIndicator)) typingIndicator.remove();
-    const finalErrorMessage = `Sorry, I'm having trouble connecting right now. (Error: ${lastErrorObject ? lastErrorObject.message : 'Max retries reached'})`;
+    const finalErrorMessage = `Sorry, I'm having trouble connecting right now. (Error: ${lastErrorObject ? (lastErrorObject.error || lastErrorObject.message) : 'Max retries reached'})`;
     displayMessage(finalErrorMessage, 'system-info', 'system-info');
-    log.error('Renderer: Max retries reached for Gemini API call. Last error:', lastErrorObject ? lastErrorObject.message : "N/A");
-    // Instead of throwing, return an error message string or a specific object
-    return `Error: Yui is unable to respond at the moment. ${lastErrorObject ? lastErrorObject.message : 'Please try again later.'}`;
+    log.error('Renderer: Max retries reached for Gemini API call. Last error:', lastErrorObject ? (lastErrorObject.error || lastErrorObject.message) : "N/A", "Details:", lastErrorObject ? lastErrorObject.details : "N/A");
+    return `Error: Yui is unable to respond at the moment. ${lastErrorObject ? (lastErrorObject.error || lastErrorObject.message) : 'Please try again later.'}`;
 }
 
 /**
@@ -1038,6 +1234,7 @@ function pruneMemories() {
             // Additional scoring logic
             const text = msg.parts[0].text;
             const doc = nlp(text);
+            
             let score = chunkImportance;
             
             // Preference for messages that might contain information about the user
@@ -1072,9 +1269,9 @@ function pruneMemories() {
 
 function displayInitialGreeting() {
     if (yuiData.memory.length === 0 && yuiData.friendshipStage === "Stranger") {
-        const initialGreeting = "uh, who are you?";
-        displayMessage(initialGreeting, 'yui');
-        addToMemory({ role: "model", parts: [{ text: initialGreeting }] });
+        const greeting = `Hello, I'm ${yuiData.characterName}. It's... nice to meet you, I guess.`;
+        displayMessage(greeting, 'yui');
+        addToMemory({ role: "model", parts: [{ text: greeting }] }); // Now addToMemory is defined
     }
 }
 
@@ -1601,6 +1798,8 @@ function getTopics(doc) {
 }
 
 function updateYuiProfileDisplay() {
+    yuiNameDisplay.textContent = yuiData.characterName;
+    if (chatHeaderTitle) chatHeaderTitle.textContent = yuiData.characterName; // Update chat header too
     yuiFriendshipStageDisplay.textContent = yuiData.friendshipStage;
     yuiAvatarInitials.textContent = yuiData.characterName.substring(0,1).toUpperCase();
     userNameDisplay.textContent = yuiData.userName; // Update user name in sidebar
@@ -2035,66 +2234,112 @@ function updateEmotionDisplay(trustChange, affectionChange, sentimentScore) {
 
 // --- Proactive Engagement Logic ---
 async function tryProactiveAction() {
-    if (!window.memoryManager || typeof window.memoryManager.getProactiveSuggestion !== 'function') {
-        log.warn("Renderer: MemoryManager or getProactiveSuggestion not available for proactive action.");
+    if (isProcessingMessage) return; // Don't be proactive if Yui is already responding or user is typing
+
+    const lastProactiveTime = yuiData.lastProactiveTimestamp ? new Date(yuiData.lastProactiveTimestamp).getTime() : 0;
+    const currentTime = new Date().getTime();
+    const proactiveCooldown = 5 * 60 * 1000; // 5 minutes
+
+    if (currentTime - lastProactiveTime < proactiveCooldown) {
+        // log.debug("Renderer: Proactive action cooldown active.");
         return;
     }
+    
+    // Only try proactive if chat is relatively idle (e.g., last message was from Yui or some time ago)
+    if (yuiData.memory.length > 0) {
+        const lastMessage = yuiData.memory[yuiData.memory.length - 1];
+        const lastInteractionTime = yuiData.lastInteractionTimestamp ? new Date(yuiData.lastInteractionTimestamp).getTime() : 0;
 
-    const suggestion = window.memoryManager.getProactiveSuggestion(yuiData);
-
-    if (suggestion) {
-        log.info("Renderer: Attempting proactive engagement based on suggestion:", suggestion);
-
-        let proactiveInstructionToYui = ""; // This is the "user message" for the Gemini call
-        if (suggestion.type === 'preference' && suggestion.category && suggestion.value) {
-            proactiveInstructionToYui = `System Instruction: You recall that ${yuiData.userName} likes '${suggestion.value}' (${suggestion.category}). Casually ask them about it, or share a related thought. Keep it natural and in character.`;
-        } else if (suggestion.type === 'userFact' && suggestion.text) {
-            // Ensure the fact is not too long for a prompt
-            const shortFact = suggestion.text.length > 100 ? suggestion.text.substring(0, 97) + "..." : suggestion.text;
-            proactiveInstructionToYui = `System Instruction: You remember ${yuiData.userName} mentioned: "${shortFact}". Casually bring this up or ask a follow-up question. Keep it natural and in character.`;
+        // If last message was from user and very recent, don't interrupt
+        if (lastMessage.role === 'user' && (currentTime - lastInteractionTime < 30000)) { // 30s
+            // log.debug("Renderer: User recently interacted, deferring proactive action.");
+            return;
         }
-        // Add more suggestion types here if needed (e.g., keyConversation)
+    }
 
-        if (proactiveInstructionToYui) {
-            const proactiveTypingIndicator = document.createElement('div');
-            proactiveTypingIndicator.classList.add('message', 'yui-message', 'typing-indicator');
-            proactiveTypingIndicator.textContent = "Yui is pondering..."; // Different indicator
-            proactiveTypingIndicator.id = "proactive-typing-indicator";
-            chatMessagesDiv.appendChild(proactiveTypingIndicator);
-            chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
 
-            // This call to getGeminiResponse is Yui initiating based on an internal prompt.
-            const yuiProactiveResponse = await getGeminiResponse(proactiveInstructionToYui, proactiveTypingIndicator);
+    log.info("Renderer: Attempting proactive action.");
 
-            if (proactiveTypingIndicator && chatMessagesDiv.contains(proactiveTypingIndicator)) {
-                chatMessagesDiv.removeChild(proactiveTypingIndicator);
+    if (window.memoryManager && typeof window.memoryManager.getProactiveSuggestion === 'function') {
+        const suggestion = window.memoryManager.getProactiveSuggestion(yuiData); // yuiData is available in renderer.js scope
+
+        if (suggestion) {
+            let proactivePrompt = "";
+            if (suggestion.type === 'preference') {
+                proactivePrompt = `You remember that the user's favorite ${suggestion.category} is ${suggestion.value}. Casually bring this up or ask something related to it.`;
+            } else if (suggestion.type === 'userFact') {
+                proactivePrompt = `You recall the user once mentioned: "${suggestion.text}". Gently bring this up or ask a follow-up question about it.`;
             }
+            // Add more suggestion types as needed
 
-            if (yuiProactiveResponse && !yuiProactiveResponse.startsWith("Error:")) {
-                displayMessage(yuiProactiveResponse, 'yui');
-                // Add Yui's proactive message to memory. The "user" part was the instruction, not actual user input.
-                addToMemory({ role: "model", parts: [{ text: yuiProactiveResponse }] }); 
-                
-                // Update emotional state based on Yui's proactive message (e.g., if she expresses something)
-                // For simplicity, we might skip direct emotional state update here, or make it minimal,
-                // as there's no direct user message to react to *for this specific proactive utterance*.
-                // The user's *next* message will be the response to Yui's proactive statement.
-                // updateEmotionalState("System: Yui initiated topic", yuiProactiveResponse); // Optional, might be too noisy
+            if (proactivePrompt) {
+                isProcessingMessage = true; // Set flag to indicate Yui is "thinking"
+                const typingIndicator = document.createElement('div');
+                typingIndicator.classList.add('message', 'yui-message', 'typing-indicator');
+                typingIndicator.textContent = `${yuiData.characterName} is thinking...`;
+                typingIndicator.id = "typing-indicator-proactive";
+                chatMessagesDiv.appendChild(typingIndicator);
+                chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
 
-                yuiData.lastProactiveTimestamp = new Date().toISOString();
-                log.info("Renderer: Yui made a proactive statement. Timestamp updated:", yuiData.lastProactiveTimestamp);
-                
-                await window.electronAPI.saveYuiData(yuiData);
-                updateDashboardUIData(); // Update UI if necessary (e.g., memory count)
-                updateYuiProfileDisplay(); // Update Yui's profile
-            } else {
-                log.warn("Renderer: Proactive Gemini call failed or returned error:", yuiProactiveResponse);
+                try {
+                    // Construct a minimal history, just the system prompt and the proactive instruction
+                    const proactiveSystemInstruction = getYuiSystemPrompt(); // Get current system prompt
+                    const proactiveContents = [
+                        { role: "user", parts: [{ text: `SYSTEM_PROACTIVE_ENGAGEMENT_REQUEST: ${proactivePrompt}` }] }
+                        // No actual user message, this is an internal prompt for Yui to generate a proactive message.
+                    ];
+                    
+                    log.debug("Renderer: Sending proactive request to Gemini. Instruction:", proactivePrompt);
+
+                    const response = await window.electronAPI.callGemini({
+                        apiKey: currentSettings.apiKey,
+                        modelName: 'gemini-1.5-flash-latest', // Or your preferred model
+                        contents: [{ role: "system", parts: [{text: proactiveSystemInstruction }] }, ...proactiveContents],
+                        generationConfig: {
+                            maxOutputTokens: 150,
+                            temperature: 0.75, // Slightly creative for proactive messages
+                            topP: 0.9,
+                            topK: 40
+                        },
+                        safetySettings: [ // Standard safety settings
+                            { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
+                            { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
+                            { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
+                            { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
+                        ]
+                    });
+
+                    if (typingIndicator && chatMessagesDiv.contains(typingIndicator)) {
+                        chatMessagesDiv.removeChild(typingIndicator);
+                    }
+
+                    if (response.success && response.text) {
+                        const formattedYuiResponse = window.markdownFormatter.format(response.text);
+                        displayMessage(formattedYuiResponse, 'yui', 'proactive'); // Add a type for styling if needed
+                        addToMemory({ role: "model", parts: [{ text: response.text }] }); // Add Yui's proactive message to memory
+                        updateEmotionalState("PROACTIVE_ENGAGEMENT", response.text); // Update emotion based on proactive message
+                        yuiData.lastProactiveTimestamp = new Date().toISOString();
+                        yuiData.lastInteractionTimestamp = new Date().toISOString(); // Also update last interaction
+                        updateYuiStatusPanel();
+                        log.info("Renderer: Proactive message sent:", response.text.substring(0, 50) + "...");
+                    } else {
+                        log.warn("Renderer: Proactive suggestion failed or returned no text.", response.error || "No text in response.");
+                    }
+                } catch (error) {
+                    log.error("Renderer: Error during proactive Gemini call:", error);
+                    if (typingIndicator && chatMessagesDiv.contains(typingIndicator)) {
+                        chatMessagesDiv.removeChild(typingIndicator);
+                    }
+                } finally {
+                    isProcessingMessage = false; // Reset flag
+                }
             }
         } else {
-            log.debug("Renderer: Proactive instruction could not be formulated from suggestion.");
+            log.info("Renderer: No suitable proactive suggestion found by MemoryManager.");
         }
     } else {
-        log.debug("Renderer: No proactive suggestion found by MemoryManager.");
+        log.warn('Renderer: MemoryManager or getProactiveSuggestion not available for proactive action.');
+        // This warning should now be less frequent if memory-manager.js is loaded correctly.
     }
 }
 

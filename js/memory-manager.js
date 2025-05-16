@@ -36,7 +36,7 @@ if (window.log && typeof window.log.info === 'function') {
 }
 
 // Memory Pools
-const memoryPools = {
+let memoryPools = {
     // Facts the user has shared about themselves
     userFacts: [],
     
@@ -352,31 +352,46 @@ function getRelevantMemories(currentTopic) {
     
     // Simple keyword-based relevance for now
     // In a real implementation, you'd use embedding similarity search
-    const keywords = currentTopic.toLowerCase().split(/\s+/);
+    const keywords = currentTopic.toLowerCase().split(/\s+/).filter(k => k.length > 0);
     
-    // Search each memory pool
-    for (const pool in memoryPools) {
-        for (const memory of memoryPools[pool]) {
-            // Calculate simple relevance score by keyword matching
-            const text = pool === 'emotionalMoments' || pool === 'keyConversations' 
-                ? memory.userText + ' ' + memory.yuiText 
-                : memory.text;
+    // Iterate only over the keys defined in relevantMemories, which correspond to array-based pools
+    for (const poolName in relevantMemories) {
+        if (memoryPools.hasOwnProperty(poolName) && Array.isArray(memoryPools[poolName])) {
+            const currentPoolData = memoryPools[poolName];
+            for (const memory of currentPoolData) {
+                let text = '';
+                if (poolName === 'emotionalMoments' || poolName === 'keyConversations') {
+                    text = (memory.userText || '') + ' ' + (memory.yuiText || '');
+                } else if (memory.hasOwnProperty('text')) {
+                    text = memory.text || '';
+                } else {
+                    mmLog.warn(`Memory item in pool '${poolName}' is missing 'text' property:`, memory);
+                    continue; 
+                }
+
+                if (typeof text !== 'string') {
+                    mmLog.warn(`Memory item in pool '${poolName}' has non-string text content:`, memory);
+                    continue;
+                }
                 
-            const relevance = keywords.reduce((score, keyword) => 
-                text.toLowerCase().includes(keyword) ? score + 1 : score, 0
-            );
-            
-            if (relevance > 0) {
-                relevantMemories[pool].push({
-                    ...memory,
-                    relevance
-                });
+                const relevance = keywords.reduce((score, keyword) => 
+                    text.toLowerCase().includes(keyword) ? score + 1 : score, 0
+                );
+                
+                if (relevance > 0) {
+                    relevantMemories[poolName].push({
+                        ...memory,
+                        relevance
+                    });
+                }
             }
+            
+            // Sort by relevance and take top 3
+            relevantMemories[poolName].sort((a, b) => b.relevance - a.relevance);
+            relevantMemories[poolName] = relevantMemories[poolName].slice(0, 3);
+        } else {
+            mmLog.warn(`Memory pool '${poolName}' is missing in memoryPools or is not an array.`);
         }
-        
-        // Sort by relevance and take top 3
-        relevantMemories[pool].sort((a, b) => b.relevance - a.relevance);
-        relevantMemories[pool] = relevantMemories[pool].slice(0, 3);
     }
     
     return relevantMemories;
@@ -385,9 +400,10 @@ function getRelevantMemories(currentTopic) {
 /**
  * Creates a memory recap for the system prompt
  * @param {string} currentTopic - Current conversation topic
+ * @param {object} currentYuiData - The current yuiData object from renderer.js
  * @returns {string} - Memory recap text for system prompt
  */
-function createMemoryRecap(currentTopic) {
+function createMemoryRecap(currentTopic, currentYuiData) { // ADDED currentYuiData parameter
     const relevantMemories = getRelevantMemories(currentTopic);
     let recap = "Previous relevant memories:\n";
     
@@ -423,7 +439,8 @@ function createMemoryRecap(currentTopic) {
 
     // Knowledge Graph Insights for User
     let kgUserInsights = [];
-    const userNameNormalized = normalizeEntityId(window.yuiData && window.yuiData.userName ? window.yuiData.userName : 'user');
+    // Use currentYuiData passed as parameter
+    const userNameNormalized = normalizeEntityId(currentYuiData && currentYuiData.userName ? currentYuiData.userName : 'user');
 
     memoryPools.knowledgeGraph.edges.forEach(edgeKey => {
         const [source, relationship, target] = edgeKey.split(/_(.+)/s).filter(Boolean); // Split only on the first underscore of relationship
@@ -565,6 +582,19 @@ function getProactiveSuggestion(currentYuiData) {
     return chosenSuggestion;
 }
 
+function clearAllMemories() {
+    mmLog.info("Clearing all memory pools (userFacts, keyConversations, emotionalMoments, yuiExperiences, knowledgeGraph).");
+    memoryPools = {
+        userFacts: [],
+        keyConversations: [],
+        emotionalMoments: [],
+        yuiExperiences: [],
+        knowledgeGraph: { nodes: new Map(), edges: new Set() }
+    };
+    saveMemories(); // This will save the cleared state to localStorage
+    // No need to update yuiData.memory here, renderer.js will handle its own short-term memory
+}
+
 
 // Export the memory management functions
 window.memoryManager = {
@@ -573,7 +603,8 @@ window.memoryManager = {
     createMemoryRecap,
     saveMemories,
     loadMemories,
-    getProactiveSuggestion // Added
+    getProactiveSuggestion, // Added
+    clearAllMemories // ADDED
 };
 
 // Ensure memories (including KG) are loaded when the script is initialized

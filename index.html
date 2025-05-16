@@ -102,6 +102,7 @@
                 <h1>Settings</h1>
                 <div class="settings-nav">
                     <button id="generalSettingsTabButton" class="settings-nav-button active">General</button>
+                    <button id="modelSettingsTabButton" class="settings-nav-button">Model</button> <!-- ADDED -->
                     <button id="logsSettingsTabButton" class="settings-nav-button">Logs</button>
                 </div>
 
@@ -146,6 +147,41 @@
                     </div>
                 </div>
 
+                <!-- ADDED: Model Settings View -->
+                <div id="modelSettingsView" class="settings-content">
+                    <h2>Model Customization</h2>
+                    <p>Define the core characteristics and system instructions for the AI.
+                        Use placeholders like <code>{{CHARACTER_NAME}}</code>, <code>{{USER_NAME}}</code>, <code>{{AGE}}</code>, <code>{{OCCUPATION}}</code>, <code>{{BACKGROUND_SUMMARY}}</code>, <code>{{TRUST_LEVEL}}</code>, <code>{{AFFECTION_LEVEL}}</code>, <code>{{FRIENDSHIP_STAGE}}</code>, <code>{{SHYNESS_LEVEL}}</code>, <code>{{SARCASM_LEVEL}}</code>, <code>{{PLAYFULNESS_LEVEL}}</code>, <code>{{PATIENCE_LEVEL}}</code>, <code>{{OPENNESS_PERSONAL}}</code>, <code>{{OPENNESS_HOBBIES}}</code>, <code>{{OPENNESS_DEEP_THOUGHTS}}</code>, <code>{{OPENNESS_FUTURE_PLANS}}</code>, <code>{{OPENNESS_VULNERABILITY}}</code>, <code>{{USER_PREF_FOOD}}</code>, <code>{{USER_PREF_GAMES}}</code>, <code>{{USER_PREF_ANIME}}</code>, <code>{{USER_PREF_COLOR}}</code>, and <code>{{MEMORY_RECAP}}</code> in your system prompt.
+                        Leave "Custom System Instructions" blank to use the default Yui personality prompt.
+                    </p>
+                    <div class="settings-section">
+                        <label for="modelNameInput">Character Name:</label>
+                        <input type="text" id="modelNameInput" placeholder="e.g., Yui">
+                    </div>
+                    <div class="settings-section">
+                        <label for="modelAgeInput">Character Age:</label>
+                        <input type="number" id="modelAgeInput" placeholder="e.g., 28">
+                    </div>
+                    <div class="settings-section">
+                        <label for="modelOccupationInput">Character Occupation:</label>
+                        <input type="text" id="modelOccupationInput" placeholder="e.g., Guitarist">
+                    </div>
+                    <div class="settings-section">
+                        <label for="modelBackgroundTextarea">Background Summary:</label>
+                        <textarea id="modelBackgroundTextarea" rows="5" placeholder="Describe the character's background..."></textarea>
+                    </div>
+                    <div class="settings-section">
+                        <label for="modelSystemPromptTextarea">Custom System Instructions:</label>
+                        <textarea id="modelSystemPromptTextarea" rows="10" placeholder="Enter custom system prompt here, or leave blank for default Yui prompt..."></textarea>
+                    </div>
+                    <div class="settings-section">
+                        <button id="revertToDefaultYuiButton" class="secondary-button">Revert to Default Yui Persona</button>
+                    </div>
+                     <div class="settings-section">
+                        <p><em>Remember to click "Save All Settings" in the General tab to apply any changes made here.</em></p>
+                    </div>
+                </div>
+
                 <div id="logsSettingsView" class="settings-content">
                     <h2>Application Logs</h2>
                     <button id="refreshLogsButton">Refresh Logs</button>
@@ -158,6 +194,7 @@
     <!-- Use jsDelivr instead of unpkg for better reliability -->
     <script src="https://cdn.jsdelivr.net/npm/compromise@14.14.4/builds/compromise.min.js"></script>
     <script src="js/markdown-formatter.js"></script>
+    <script src="js/memory-manager.js"></script> <!-- ADD THIS LINE -->
     <script src="js/renderer.js"></script>
 </body>
 </html>

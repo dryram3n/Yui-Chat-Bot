@@ -140,6 +140,7 @@ ipcMain.handle('load-yui-data', async () => {
             const parsedData = JSON.parse(data);
             // Ensure new fields have defaults if loading old data
             parsedData.lastProactiveTimestamp = parsedData.lastProactiveTimestamp === undefined ? null : parsedData.lastProactiveTimestamp;
+            parsedData.customSystemPrompt = parsedData.customSystemPrompt === undefined ? null : parsedData.customSystemPrompt; // ADDED
             
             // Initialize new personality traits if they don't exist
             parsedData.shynessLevel = parsedData.shynessLevel === undefined ? 70 : parsedData.shynessLevel;
@@ -180,6 +181,7 @@ ipcMain.handle('load-yui-data', async () => {
             lastInteractionTimestamp: null,
             sentimentHistory: [], // Ensure this is also part of default if not already
             maxSentimentHistory: 20, // Ensure this is also part of default
+            customSystemPrompt: null, // ADDED
             lastProactiveTimestamp: null
         };
     } catch (error) {
@@ -196,6 +198,7 @@ ipcMain.handle('load-yui-data', async () => {
             memory: [], maxMemoryTurns: 50,
             userPreferences: {}, keyEvents: [], affectionHistory: [], trustHistory: [], lastInteractionTimestamp: null,
             sentimentHistory: [], maxSentimentHistory: 20,
+            customSystemPrompt: null, // ADDED
             lastProactiveTimestamp: null
         };
     }
