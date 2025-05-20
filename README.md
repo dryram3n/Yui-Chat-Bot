@@ -60,6 +60,7 @@ A brief overview of key files and folders:
     *   `logs/app.log`: Application logs.
 *   `package.json`: Defines project metadata, dependencies, and scripts.
 *   `forge.config.js`: Configuration for Electron Forge (building and packaging).
+*   `launchChatBot.bat`: A batch file to easily start the application.
 
 ## Setup and Installation (for Development)
 

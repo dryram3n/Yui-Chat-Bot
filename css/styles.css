@@ -1,18 +1,20 @@
 /* Basic Reset & Font */
 body, html {
+    height: 100%;
     margin: 0;
+    font-family: sans-serif; /* Consider a base font */
+    overflow: hidden; /* Prevent body scrollbars if app-container handles scrolling */
     padding: 0;
-    font-family: 'Segoe UI', 'Roboto', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-    height: 100vh;
-    overflow: hidden;
-    color: #ccc;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    color: #ccc;
 }
 
 .app-container {
     display: flex;
-    height: 100%;
+    height: 100vh; /* Full viewport height */
+    width: 100vw; /* Full viewport width */
+    overflow: hidden; /* Prevent app-container scroll, let children scroll */
 }
 
 /* --- Avatar Placeholder Styling --- */
@@ -70,13 +72,16 @@ body, html {
 
 /* --- Sidebar Enhancements --- */
 .sidebar {
-    width: 280px;
-    background-color: #25252c;
-    padding: 20px; /* MODIFIED */
+    width: 25%; /* Example: 25% of viewport width */
+    max-width: 300px; /* Max width for sidebar */
+    min-width: 200px; /* Min width for sidebar */
+    background-color: #333; /* Example color */
+    color: white;
+    padding: 15px;
     display: flex;
     flex-direction: column;
-    border-right: 1px solid #3a3a40;
-    box-shadow: 2px 0 15px rgba(0,0,0,0.1);
+    overflow-y: auto; /* Allow sidebar to scroll if content overflows */
+    flex-shrink: 0; /* Prevent sidebar from shrinking too much */
 }
 
 .profile-preview {
@@ -288,22 +293,22 @@ body.theme-green-leaf-vibes .emotion-face {
 
 /* --- Main Content Area --- */
 .main-content {
-    flex-grow: 1;
+    flex-grow: 1; /* Takes remaining space */
+    padding: 15px;
     display: flex;
-    flex-direction: column;
-    background-color: #1c1c21;
+    flex-direction: column; /* Stack views vertically */
+    overflow: hidden; /* Let views handle their own scrolling */
 }
 
 .view {
-    display: none;
-    padding: 0; /* Remove padding here, add to children if needed */
-    flex-grow: 1;
-    overflow-y: auto;
-    flex-direction: column; /* Ensure views are column flex containers */
+    display: none; /* Hidden by default */
+    flex-direction: column;
+    height: 100%; /* Make view take full height of main-content */
+    overflow: hidden; /* Prevent view itself from scrolling, let its children scroll */
 }
 
 .view.active-view {
-    display: flex;
+    display: flex; /* Show active view */
 }
 
 /* --- Chat View Enhancements --- */
@@ -337,6 +342,24 @@ body.theme-green-leaf-vibes .emotion-face {
 }
 #clearChatButton:hover {
     background-color: #555;
+    color: #fff;
+}
+
+/* ADDED styling for the new reset button */
+#resetChatStateButton {
+    background-color: #583030; /* A slightly different, more "warning" color */
+    color: #f0d0d0;
+    border: 1px solid #7a4040;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.8em;
+    margin-left: 5px; /* Space it from the clear chat button */
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+#resetChatStateButton:hover {
+    background-color: #7a4040;
     color: #fff;
 }
 
@@ -634,6 +657,17 @@ body.theme-light-mode .message .timestamp { color: rgba(0,0,0,0.4); }
 body.theme-light-mode .user-message .timestamp { color: rgba(0,0,0,0.5); }
 body.theme-light-mode .yui-message .timestamp { color: rgba(0,0,0,0.5); }
 
+/* ADDED: Light mode style for reset button */
+body.theme-light-mode #resetChatStateButton {
+    background-color: #f8e0e0;
+    color: #a13030;
+    border-color: #d17070;
+}
+body.theme-light-mode #resetChatStateButton:hover {
+    background-color: #e7c0c0;
+    color: #802020;
+}
+
 /* --- Theme: Cyberpunk Dream --- */
 body.theme-cyberpunk-dream {
     font-family: 'Consolas', 'Lucida Console', monospace;
@@ -759,6 +793,18 @@ body.theme-cyberpunk-dream .chart-container h3, body.theme-cyberpunk-dream .info
 body.theme-cyberpunk-dream .info-panel li { border-bottom: 1px solid #3a2f6b; color: #00f0ff; }
 body.theme-cyberpunk-dream #clearChatButton { background-color: #3a2f6b; color: #00f0ff; border-color: #ff00ff; }
 body.theme-cyberpunk-dream #clearChatButton:hover { background-color: #ff00ff; color: #0d0221; }
+
+/* ADDED: Cyberpunk style for reset button */
+body.theme-cyberpunk-dream #resetChatStateButton {
+    background-color: #6b2f4b;
+    color: #ff70a6;
+    border-color: #ff00ff;
+}
+body.theme-cyberpunk-dream #resetChatStateButton:hover {
+    background-color: #ff00ff;
+    color: #0d0221;
+}
+
 body.theme-cyberpunk-dream .message .timestamp { color: rgba(0, 240, 255, 0.5); }
 
 /* --- Theme: OLED Black --- */
@@ -802,6 +848,18 @@ body.theme-oled-black .danger-button { background-color: #cc0000; border: 1px so
 body.theme-oled-black .danger-button:hover { background-color: #990000; }
 body.theme-oled-black #clearChatButton { background-color: #181818; color: #aaa; border-color: #282828; }
 body.theme-oled-black #clearChatButton:hover { background-color: #282828; color: #ddd; }
+
+/* ADDED: OLED style for reset button */
+body.theme-oled-black #resetChatStateButton {
+    background-color: #381818;
+    color: #c0a0a0;
+    border-color: #482828;
+}
+body.theme-oled-black #resetChatStateButton:hover {
+    background-color: #482828;
+    color: #e0c0c0;
+}
+
 body.theme-oled-black .message .timestamp { color: rgba(224, 224, 224, 0.4); }
 
 /* --- Theme: Ocean Vibe --- */
@@ -845,6 +903,18 @@ body.theme-ocean-vibe .danger-button { background-color: #d9534f; border: 1px so
 body.theme-ocean-vibe .danger-button:hover { background-color: #c9302c; }
 body.theme-ocean-vibe #clearChatButton { background-color: #005073; color: #b3ecff; border-color: #006080; }
 body.theme-ocean-vibe #clearChatButton:hover { background-color: #006080; color: #e0f7fa; }
+
+/* ADDED: Ocean Vibe style for reset button */
+body.theme-ocean-vibe #resetChatStateButton {
+    background-color: #004c66; /* Darker, distinct red-tinged blue */
+    color: #ffcdd2; /* Light reddish text */
+    border-color: #006080;
+}
+body.theme-ocean-vibe #resetChatStateButton:hover {
+    background-color: #006080;
+    color: #ffebef;
+}
+
 body.theme-ocean-vibe .message .timestamp { color: rgba(224, 247, 250, 0.5); }
 
 /* --- Theme: Retro Gaming --- */
@@ -888,6 +958,20 @@ body.theme-retro-gaming .danger-button { background-color: #e43f5a; color: #ffff
 body.theme-retro-gaming .danger-button:hover { background-color: #ffc947; color: #e43f5a; border-color: #e43f5a;}
 body.theme-retro-gaming #clearChatButton { background-color: #e43f5a; color: #ffc947; border: 2px solid #ffc947; padding: 4px 8px; }
 body.theme-retro-gaming #clearChatButton:hover { background-color: #ffc947; color: #e43f5a; border-color: #e43f5a; }
+
+/* ADDED: Retro Gaming style for reset button */
+body.theme-retro-gaming #resetChatStateButton {
+    background-color: #b32e3a; /* Darker red */
+    color: #ffc947;
+    border: 2px solid #ffc947;
+    padding: 2px 6px; /* Adjust padding to fit font */
+}
+body.theme-retro-gaming #resetChatStateButton:hover {
+    background-color: #ffc947;
+    color: #b32e3a;
+    border-color: #b32e3a;
+}
+
 body.theme-retro-gaming .message .timestamp { color: #00aaff; font-size: 0.6em; bottom: -12px; }
 
 /* --- Theme: Purple Haze --- */
@@ -931,6 +1015,18 @@ body.theme-purple-haze .danger-button { background-color: #e53935; border: 1px s
 body.theme-purple-haze .danger-button:hover { background-color: #c62828; }
 body.theme-purple-haze #clearChatButton { background-color: #6a1b9a; color: #e1bee7; border-color: #7b1fa2; }
 body.theme-purple-haze #clearChatButton:hover { background-color: #7b1fa2; color: #e6e6fa; }
+
+/* ADDED: Purple Haze style for reset button */
+body.theme-purple-haze #resetChatStateButton {
+    background-color: #6a0042; /* Deep magenta/purple */
+    color: #f3e5f5;
+    border-color: #8e24aa;
+}
+body.theme-purple-haze #resetChatStateButton:hover {
+    background-color: #8e24aa;
+    color: #ffffff;
+}
+
 body.theme-purple-haze .message .timestamp { color: rgba(230, 230, 250, 0.5); }
 
 /* --- Theme: Stoner's Paradise --- */
@@ -974,6 +1070,18 @@ body.theme-stoners-paradise .danger-button { background-color: #d32f2f; border: 
 body.theme-stoners-paradise .danger-button:hover { background-color: #b71c1c; }
 body.theme-stoners-paradise #clearChatButton { background-color: #556b2f; color: #c8e6c9; border-color: #6b8e23; }
 body.theme-stoners-paradise #clearChatButton:hover { background-color: #6b8e23; color: #e8f5e9; }
+
+/* ADDED: Stoner's Paradise style for reset button */
+body.theme-stoners-paradise #resetChatStateButton {
+    background-color: #783c00; /* Earthy red/brown */
+    color: #ffe0b2;
+    border-color: #a15200;
+}
+body.theme-stoners-paradise #resetChatStateButton:hover {
+    background-color: #a15200;
+    color: #fff3e0;
+}
+
 body.theme-stoners-paradise .message .timestamp { color: rgba(232, 245, 233, 0.6); }
 
 /* --- Theme: Green Leaf Vibes --- */
@@ -1017,7 +1125,555 @@ body.theme-green-leaf-vibes .danger-button { background-color: #f44336; border: 
 body.theme-green-leaf-vibes .danger-button:hover { background-color: #d32f2f; }
 body.theme-green-leaf-vibes #clearChatButton { background-color: #388e3c; color: #c8e6c9; border-color: #4caf50; }
 body.theme-green-leaf-vibes #clearChatButton:hover { background-color: #4caf50; color: #e8f5e9; }
+
+/* ADDED: Green Leaf Vibes style for reset button */
+body.theme-green-leaf-vibes #resetChatStateButton {
+    background-color: #8c2820; /* Muted red */
+    color: #e8f5e9;
+    border-color: #b54036;
+}
+body.theme-green-leaf-vibes #resetChatStateButton:hover {
+    background-color: #b54036;
+    color: #ffffff;
+}
+
 body.theme-green-leaf-vibes .message .timestamp { color: rgba(232, 245, 233, 0.6); }
+
+/* --- Theme: Solarized Dark --- */
+body.theme-solarized-dark {
+    background-color: #002b36; /* base03 */
+    color: #839496; /* base0 */
+    font-family: 'Menlo', 'Consolas', monospace;
+}
+body.theme-solarized-dark .sidebar {
+    background-color: #073642; /* base02 */
+    border-right: 1px solid #586e75; /* base01 */
+}
+body.theme-solarized-dark .avatar-placeholder {
+    background: linear-gradient(135deg, #586e75, #073642); /* base01, base02 */
+    border: 3px solid #657b83; /* base00 */
+    color: #93a1a1; /* base1 */
+}
+body.theme-solarized-dark #yuiAvatarInitials {
+    color: #93a1a1; /* base1 */
+}
+body.theme-solarized-dark .profile-preview h2 {
+    color: #93a1a1; /* base1 */
+}
+body.theme-solarized-dark .profile-preview p {
+    color: #657b83; /* base00 */
+}
+body.theme-solarized-dark .status-panel {
+    background-color: #073642; /* base02 */
+    border-color: #586e75; /* base01 */
+}
+body.theme-solarized-dark .status-panel h3 {
+    color: #268bd2; /* blue */
+    border-bottom-color: #586e75; /* base01 */
+}
+body.theme-solarized-dark .status-panel p,
+body.theme-solarized-dark .status-panel li {
+    color: #839496; /* base0 */
+}
+body.theme-solarized-dark .status-panel span {
+    color: #93a1a1; /* base1 */
+}
+body.theme-solarized-dark .user-profile h4 {
+    color: #2aa198; /* cyan */
+}
+body.theme-solarized-dark .emotion-panel {
+    background-color: #073642; /* base02 */
+    border-color: #586e75; /* base01 */
+}
+body.theme-solarized-dark .emotion-panel h3 {
+    color: #268bd2; /* blue */
+    border-bottom-color: #586e75; /* base01 */
+}
+body.theme-solarized-dark .emotion-face {
+    color: #b58900; /* yellow */
+}
+body.theme-solarized-dark .sidebar nav button {
+    color: #839496; /* base0 */
+    background-color: transparent;
+}
+body.theme-solarized-dark .sidebar nav button.active,
+body.theme-solarized-dark .sidebar nav button:hover {
+    background-color: #586e75; /* base01 */
+    color: #fdf6e3; /* base3 */
+    border-left-color: #268bd2; /* blue */
+}
+body.theme-solarized-dark .main-content {
+    background-color: #002b36; /* base03 */
+}
+body.theme-solarized-dark .chat-header {
+    background-color: #073642; /* base02 */
+    border-bottom: 1px solid #586e75; /* base01 */
+    color: #93a1a1; /* base1 */
+}
+body.theme-solarized-dark .chat-messages {
+    background-color: #002b36; /* base03 */
+}
+body.theme-solarized-dark .yui-message {
+    background-color: #073642; /* base02 */
+    color: #839496; /* base0 */
+    border: 1px solid #586e75; /* base01 */
+}
+body.theme-solarized-dark .user-message {
+    background-color: #586e75; /* base01 */
+    color: #fdf6e3; /* base3 */
+    border: 1px solid #657b83; /* base00 */
+}
+body.theme-solarized-dark .system-info {
+    color: #657b83; /* base00 */
+}
+body.theme-solarized-dark .chat-input-area {
+    background-color: #073642; /* base02 */
+    border-top: 1px solid #586e75; /* base01 */
+}
+body.theme-solarized-dark .chat-input-area input {
+    background-color: #002b36; /* base03 */
+    color: #839496; /* base0 */
+    border: 1px solid #586e75; /* base01 */
+}
+body.theme-solarized-dark .chat-input-area input:focus {
+    border-color: #268bd2; /* blue */
+    box-shadow: 0 0 0 2px rgba(38, 139, 210, 0.3);
+}
+body.theme-solarized-dark .chat-input-area button {
+    background-color: #268bd2; /* blue */
+    color: #fdf6e3; /* base3 */
+    border: none;
+}
+body.theme-solarized-dark .chat-input-area button:hover {
+    background-color: #2aa198; /* cyan */
+}
+body.theme-solarized-dark #settingsView h1,
+body.theme-solarized-dark #dashboardView h1 {
+    color: #93a1a1; /* base1 */
+    border-bottom: 1px solid #586e75; /* base01 */
+}
+body.theme-solarized-dark .settings-section label {
+    color: #657b83; /* base00 */
+}
+body.theme-solarized-dark .settings-section input[type="password"],
+body.theme-solarized-dark .settings-section input[type="text"],
+body.theme-solarized-dark .settings-section select {
+    background-color: #073642; /* base02 */
+    color: #839496; /* base0 */
+    border: 1px solid #586e75; /* base01 */
+}
+body.theme-solarized-dark .settings-section input:focus,
+body.theme-solarized-dark .settings-section select:focus {
+    border-color: #268bd2; /* blue */
+    box-shadow: 0 0 0 2px rgba(38, 139, 210, 0.3);
+}
+body.theme-solarized-dark .chart-container,
+body.theme-solarized-dark .info-panel {
+    background-color: #073642; /* base02 */
+    border: 1px solid #586e75; /* base01 */
+}
+body.theme-solarized-dark .chart-container h3,
+body.theme-solarized-dark .info-panel h3 {
+    color: #93a1a1; /* base1 */
+    border-bottom: 1px solid #586e75;
+}
+body.theme-solarized-dark .info-panel li {
+    border-bottom: 1px solid #586e75; /* base01 */
+    color: #839496; /* base0 */
+}
+body.theme-solarized-dark .primary-button {
+    background-color: #2aa198; /* cyan */
+    color: #002b36; /* base03 */
+}
+body.theme-solarized-dark .primary-button:hover {
+    background-color: #268bd2; /* blue */
+}
+body.theme-solarized-dark .danger-button {
+    background-color: #dc322f; /* red */
+    color: #fdf6e3; /* base3 */
+}
+body.theme-solarized-dark .danger-button:hover {
+    background-color: #cb4b16; /* orange */
+}
+body.theme-solarized-dark #clearChatButton {
+    background-color: #586e75; /* base01 */
+    color: #93a1a1; /* base1 */
+    border-color: #657b83; /* base00 */
+}
+body.theme-solarized-dark #clearChatButton:hover {
+    background-color: #657b83; /* base00 */
+    color: #fdf6e3; /* base3 */
+}
+body.theme-solarized-dark #resetChatStateButton {
+    background-color: #cb4b16; /* orange */
+    color: #fdf6e3; /* base3 */
+    border-color: #dc322f; /* red */
+}
+body.theme-solarized-dark #resetChatStateButton:hover {
+    background-color: #dc322f; /* red */
+    color: #fdf6e3; /* base3 */
+}
+body.theme-solarized-dark .message .timestamp {
+    color: rgba(131, 148, 150, 0.6); /* base0 with alpha */
+}
+
+/* --- Theme: Nordic Night --- */
+body.theme-nordic-night {
+    background-color: #2E3440; /* nord0 - Polar Night */
+    color: #D8DEE9; /* nord4 - Snow Storm */
+    font-family: 'Fira Code', 'Source Code Pro', monospace;
+}
+body.theme-nordic-night .sidebar {
+    background-color: #3B4252; /* nord1 - Polar Night */
+    border-right: 1px solid #4C566A; /* nord3 - Polar Night */
+}
+body.theme-nordic-night .avatar-placeholder {
+    background: linear-gradient(135deg, #4C566A, #434C5E); /* nord3, nord2 */
+    border: 3px solid #88C0D0; /* nord9 - Frost */
+    color: #ECEFF4; /* nord6 - Snow Storm */
+}
+body.theme-nordic-night #yuiAvatarInitials {
+    color: #ECEFF4; /* nord6 */
+}
+body.theme-nordic-night .profile-preview h2 {
+    color: #E5E9F0; /* nord5 - Snow Storm */
+}
+body.theme-nordic-night .profile-preview p {
+    color: #A3BE8C; /* nord14 - Aurora Green */
+}
+body.theme-nordic-night .status-panel {
+    background-color: #3B4252; /* nord1 */
+    border-color: #4C566A; /* nord3 */
+}
+body.theme-nordic-night .status-panel h3 {
+    color: #88C0D0; /* nord9 - Frost */
+    border-bottom-color: #4C566A; /* nord3 */
+}
+body.theme-nordic-night .status-panel p,
+body.theme-nordic-night .status-panel li {
+    color: #D8DEE9; /* nord4 */
+}
+body.theme-nordic-night .status-panel span {
+    color: #ECEFF4; /* nord6 */
+}
+body.theme-nordic-night .user-profile h4 {
+    color: #B48EAD; /* nord15 - Aurora Purple */
+}
+body.theme-nordic-night .emotion-panel {
+    background-color: #3B4252; /* nord1 */
+    border-color: #4C566A; /* nord3 */
+}
+body.theme-nordic-night .emotion-panel h3 {
+    color: #88C0D0; /* nord9 - Frost */
+    border-bottom-color: #4C566A; /* nord3 */
+}
+body.theme-nordic-night .emotion-face {
+    color: #EBCB8B; /* nord13 - Aurora Yellow */
+}
+body.theme-nordic-night .sidebar nav button {
+    color: #D8DEE9; /* nord4 */
+    background-color: transparent;
+}
+body.theme-nordic-night .sidebar nav button.active,
+body.theme-nordic-night .sidebar nav button:hover {
+    background-color: #4C566A; /* nord3 */
+    color: #ECEFF4; /* nord6 */
+    border-left-color: #88C0D0; /* nord9 - Frost */
+}
+body.theme-nordic-night .main-content {
+    background-color: #2E3440; /* nord0 */
+}
+body.theme-nordic-night .chat-header {
+    background-color: #3B4252; /* nord1 */
+    border-bottom: 1px solid #4C566A; /* nord3 */
+    color: #E5E9F0; /* nord5 */
+}
+body.theme-nordic-night .chat-messages {
+    background-color: #2E3440; /* nord0 */
+}
+body.theme-nordic-night .yui-message {
+    background-color: #434C5E; /* nord2 - Polar Night */
+    color: #D8DEE9; /* nord4 */
+    border: 1px solid #4C566A; /* nord3 */
+}
+body.theme-nordic-night .user-message {
+    background-color: #81A1C1; /* nord10 - Frost */
+    color: #2E3440; /* nord0 */
+    border: 1px solid #5E81AC; /* nord10 darker shade for border */
+}
+body.theme-nordic-night .system-info {
+    color: #A3BE8C; /* nord14 - Aurora Green */
+}
+body.theme-nordic-night .chat-input-area {
+    background-color: #3B4252; /* nord1 */
+    border-top: 1px solid #4C566A; /* nord3 */
+}
+body.theme-nordic-night .chat-input-area input {
+    background-color: #2E3440; /* nord0 */
+    color: #D8DEE9; /* nord4 */
+    border: 1px solid #4C566A; /* nord3 */
+}
+body.theme-nordic-night .chat-input-area input:focus {
+    border-color: #88C0D0; /* nord9 - Frost */
+    box-shadow: 0 0 0 2px rgba(136, 192, 208, 0.3);
+}
+body.theme-nordic-night .chat-input-area button {
+    background-color: #88C0D0; /* nord9 - Frost */
+    color: #2E3440; /* nord0 */
+    border: none;
+}
+body.theme-nordic-night .chat-input-area button:hover {
+    background-color: #81A1C1; /* nord10 - Frost */
+}
+body.theme-nordic-night #settingsView h1,
+body.theme-nordic-night #dashboardView h1 {
+    color: #E5E9F0; /* nord5 */
+    border-bottom: 1px solid #4C566A; /* nord3 */
+}
+body.theme-nordic-night .settings-section label {
+    color: #A3BE8C; /* nord14 - Aurora Green */
+}
+body.theme-nordic-night .settings-section input[type="password"],
+body.theme-nordic-night .settings-section input[type="text"],
+body.theme-nordic-night .settings-section select {
+    background-color: #3B4252; /* nord1 */
+    color: #D8DEE9; /* nord4 */
+    border: 1px solid #4C566A; /* nord3 */
+}
+body.theme-nordic-night .settings-section input:focus,
+body.theme-nordic-night .settings-section select:focus {
+    border-color: #88C0D0; /* nord9 - Frost */
+    box-shadow: 0 0 0 2px rgba(136, 192, 208, 0.3);
+}
+body.theme-nordic-night .chart-container,
+body.theme-nordic-night .info-panel {
+    background-color: #3B4252; /* nord1 */
+    border: 1px solid #4C566A; /* nord3 */
+}
+body.theme-nordic-night .chart-container h3,
+body.theme-nordic-night .info-panel h3 {
+    color: #E5E9F0; /* nord5 */
+    border-bottom: 1px solid #4C566A; /* nord3 */
+}
+body.theme-nordic-night .info-panel li {
+    border-bottom: 1px solid #4C566A; /* nord3 */
+    color: #D8DEE9; /* nord4 */
+}
+body.theme-nordic-night .primary-button {
+    background-color: #A3BE8C; /* nord14 - Aurora Green */
+    color: #2E3440; /* nord0 */
+}
+body.theme-nordic-night .primary-button:hover {
+    background-color: #8FBCBB; /* nord7 - Frost */
+}
+body.theme-nordic-night .danger-button {
+    background-color: #BF616A; /* nord11 - Aurora Red */
+    color: #ECEFF4; /* nord6 */
+}
+body.theme-nordic-night .danger-button:hover {
+    background-color: #D08770; /* nord12 - Aurora Orange */
+}
+body.theme-nordic-night #clearChatButton {
+    background-color: #4C566A; /* nord3 */
+    color: #D8DEE9; /* nord4 */
+    border-color: #5E81AC; /* nord10 */
+}
+body.theme-nordic-night #clearChatButton:hover {
+    background-color: #5E81AC; /* nord10 */
+    color: #ECEFF4; /* nord6 */
+}
+body.theme-nordic-night #resetChatStateButton {
+    background-color: #D08770; /* nord12 - Aurora Orange */
+    color: #2E3440; /* nord0 */
+    border-color: #BF616A; /* nord11 - Aurora Red */
+}
+body.theme-nordic-night #resetChatStateButton:hover {
+    background-color: #BF616A; /* nord11 - Aurora Red */
+    color: #ECEFF4; /* nord6 */
+}
+body.theme-nordic-night .message .timestamp {
+    color: rgba(216, 222, 233, 0.6); /* nord4 with alpha */
+}
+
+/* --- Theme: OLED Black - Crimson --- */
+body.theme-oled-black-crimson { background-color: #000000; color: #e0e0e0; }
+body.theme-oled-black-crimson .sidebar { background-color: #050505; border-right: 1px solid #2a0000; } /* Dark Red tint */
+body.theme-oled-black-crimson .avatar-placeholder { background: linear-gradient(135deg, #180000, #080000); border: 3px solid #550000; color: #ff4444; } /* Red accent */
+body.theme-oled-black-crimson #yuiAvatarInitials { color: #ff6666; }
+body.theme-oled-black-crimson .profile-preview h2 { color: #ff8888; }
+body.theme-oled-black-crimson .profile-preview p { color: #cc6666; }
+body.theme-oled-black-crimson .status-panel { background-color: #0a0a0a; border-color: #3f0000; }
+body.theme-oled-black-crimson .status-panel h3 { color: #ff3333; border-bottom-color: #450000; } /* Bright Red */
+body.theme-oled-black-crimson .status-panel p, body.theme-oled-black-crimson .status-panel li { color: #c0c0c0; }
+body.theme-oled-black-crimson .status-panel span { color: #d0d0d0; }
+body.theme-oled-black-crimson .user-profile h4 { color: #ff3333; } /* Bright Red */
+body.theme-oled-black-crimson .emotion-panel { background-color: #0a0a0a; border-color: #3f0000; }
+body.theme-oled-black-crimson .emotion-panel h3 { color: #ff3333; border-bottom-color: #450000; }
+body.theme-oled-black-crimson .emotion-face { color: #ff4444; }
+body.theme-oled-black-crimson .sidebar nav button { color: #b0b0b0; background-color: transparent; border-left-color: #2a0000; }
+body.theme-oled-black-crimson .sidebar nav button.active, body.theme-oled-black-crimson .sidebar nav button:hover { background-color: #2a0000; color: #ff8888; border-left-color: #ff3333; } /* Red active */
+body.theme-oled-black-crimson .main-content { background-color: #000000; }
+body.theme-oled-black-crimson .chat-header { background-color: #080808; border-bottom: 1px solid #2a0000; color: #ff8888; }
+body.theme-oled-black-crimson .chat-messages { background-color: #000000; }
+body.theme-oled-black-crimson .yui-message { background-color: #101010; color: #d0d0d0; border: 1px solid #300000; }
+body.theme-oled-black-crimson .user-message { background-color: #181818; color: #d0d0d0; border: 1px solid #400000; }
+body.theme-oled-black-crimson .system-info { color: #cc6666; }
+body.theme-oled-black-crimson .chat-input-area { background-color: #050505; border-top: 1px solid #2a0000; }
+body.theme-oled-black-crimson .chat-input-area input { background-color: #101010; color: #e0e0e0; border: 1px solid #450000; }
+body.theme-oled-black-crimson .chat-input-area input:focus { border-color: #ff3333; box-shadow: 0 0 3px #ff3333; }
+body.theme-oled-black-crimson .chat-input-area button { background-color: #550000; color: #ffaaaa; border: 1px solid #660000; }
+body.theme-oled-black-crimson .chat-input-area button:hover { background-color: #ff3333; color: #000; }
+body.theme-oled-black-crimson #settingsView h1, body.theme-oled-black-crimson #dashboardView h1 { color: #ff8888; border-bottom: 1px solid #450000; }
+body.theme-oled-black-crimson .settings-section label { color: #cc6666; }
+body.theme-oled-black-crimson .settings-section input[type="password"],
+body.theme-oled-black-crimson .settings-section input[type="text"],
+body.theme-oled-black-crimson .settings-section select { background-color: #101010; color: #e0e0e0; border: 1px solid #450000; }
+body.theme-oled-black-crimson .settings-section input:focus,
+body.theme-oled-black-crimson .settings-section select:focus { border-color: #ff3333; box-shadow: 0 0 3px #ff3333; }
+body.theme-oled-black-crimson .primary-button { background-color: #800000; color: #ffdddd; }
+body.theme-oled-black-crimson .primary-button:hover { background-color: #ff3333; color: #000; }
+body.theme-oled-black-crimson .danger-button { background-color: #cc0000; color: #ffdddd; }
+body.theme-oled-black-crimson .danger-button:hover { background-color: #ff4444; color: #fff; }
+body.theme-oled-black-crimson #clearChatButton, body.theme-oled-black-crimson #resetChatStateButton { background-color: #440000; color: #ffaaaa; border-color: #660000; }
+body.theme-oled-black-crimson #clearChatButton:hover, body.theme-oled-black-crimson #resetChatStateButton:hover { background-color: #660000; color: #ffdddd; }
+body.theme-oled-black-crimson .message .timestamp { color: rgba(255, 100, 100, 0.6); }
+body.theme-oled-black-crimson .settings-nav-button.active { border-bottom-color: #ff3333; color: #ff8888; }
+body.theme-oled-black-crimson .settings-nav-button:hover { color: #ffaaaa; }
+
+/* --- Theme: OLED Black - Emerald --- */
+body.theme-oled-black-emerald { background-color: #000000; color: #e0e0e0; }
+body.theme-oled-black-emerald .sidebar { background-color: #050505; border-right: 1px solid #002a00; } /* Dark Green tint */
+body.theme-oled-black-emerald .avatar-placeholder { background: linear-gradient(135deg, #001800, #000800); border: 3px solid #005500; color: #44ff44; } /* Green accent */
+body.theme-oled-black-emerald #yuiAvatarInitials { color: #66ff66; }
+body.theme-oled-black-emerald .profile-preview h2 { color: #88ff88; }
+body.theme-oled-black-emerald .profile-preview p { color: #66cc66; }
+body.theme-oled-black-emerald .status-panel { background-color: #0a0a0a; border-color: #003f00; }
+body.theme-oled-black-emerald .status-panel h3 { color: #33ff33; border-bottom-color: #004500; } /* Bright Green */
+body.theme-oled-black-emerald .status-panel p, body.theme-oled-black-emerald .status-panel li { color: #c0c0c0; }
+body.theme-oled-black-emerald .status-panel span { color: #d0d0d0; }
+body.theme-oled-black-emerald .user-profile h4 { color: #33ff33; } /* Bright Green */
+body.theme-oled-black-emerald .emotion-panel { background-color: #0a0a0a; border-color: #003f00; }
+body.theme-oled-black-emerald .emotion-panel h3 { color: #33ff33; border-bottom-color: #004500; }
+body.theme-oled-black-emerald .emotion-face { color: #44ff44; }
+body.theme-oled-black-emerald .sidebar nav button { color: #b0b0b0; background-color: transparent; border-left-color: #002a00; }
+body.theme-oled-black-emerald .sidebar nav button.active, body.theme-oled-black-emerald .sidebar nav button:hover { background-color: #002a00; color: #88ff88; border-left-color: #33ff33; } /* Green active */
+body.theme-oled-black-emerald .main-content { background-color: #000000; }
+body.theme-oled-black-emerald .chat-header { background-color: #080808; border-bottom: 1px solid #002a00; color: #88ff88; }
+body.theme-oled-black-emerald .chat-messages { background-color: #000000; }
+body.theme-oled-black-emerald .yui-message { background-color: #101010; color: #d0d0d0; border: 1px solid #003000; }
+body.theme-oled-black-emerald .user-message { background-color: #181818; color: #d0d0d0; border: 1px solid #004000; }
+body.theme-oled-black-emerald .system-info { color: #66cc66; }
+body.theme-oled-black-emerald .chat-input-area { background-color: #050505; border-top: 1px solid #002a00; }
+body.theme-oled-black-emerald .chat-input-area input { background-color: #101010; color: #e0e0e0; border: 1px solid #004500; }
+body.theme-oled-black-emerald .chat-input-area input:focus { border-color: #33ff33; box-shadow: 0 0 3px #33ff33; }
+body.theme-oled-black-emerald .chat-input-area button { background-color: #005500; color: #aaffaa; border: 1px solid #006600; }
+body.theme-oled-black-emerald .chat-input-area button:hover { background-color: #33ff33; color: #000; }
+body.theme-oled-black-emerald #settingsView h1, body.theme-oled-black-emerald #dashboardView h1 { color: #88ff88; border-bottom: 1px solid #004500; }
+body.theme-oled-black-emerald .settings-section label { color: #66cc66; }
+body.theme-oled-black-emerald .settings-section input[type="password"],
+body.theme-oled-black-emerald .settings-section input[type="text"],
+body.theme-oled-black-emerald .settings-section select { background-color: #101010; color: #e0e0e0; border: 1px solid #004500; }
+body.theme-oled-black-emerald .settings-section input:focus,
+body.theme-oled-black-emerald .settings-section select:focus { border-color: #33ff33; box-shadow: 0 0 3px #33ff33; }
+body.theme-oled-black-emerald .primary-button { background-color: #008000; color: #ddffdd; }
+body.theme-oled-black-emerald .primary-button:hover { background-color: #33ff33; color: #000; }
+body.theme-oled-black-emerald .danger-button { background-color: #00cc00; color: #ddffdd; } /* Using a brighter green for "danger" in this context */
+body.theme-oled-black-emerald .danger-button:hover { background-color: #44ff44; color: #fff; }
+body.theme-oled-black-emerald #clearChatButton, body.theme-oled-black-emerald #resetChatStateButton { background-color: #004400; color: #aaffaa; border-color: #006600; }
+body.theme-oled-black-emerald #clearChatButton:hover, body.theme-oled-black-emerald #resetChatStateButton:hover { background-color: #006600; color: #ddffdd; }
+body.theme-oled-black-emerald .message .timestamp { color: rgba(100, 255, 100, 0.6); }
+body.theme-oled-black-emerald .settings-nav-button.active { border-bottom-color: #33ff33; color: #88ff88; }
+body.theme-oled-black-emerald .settings-nav-button:hover { color: #aaffaa; }
+
+/* --- Theme: OLED Black - Sapphire --- */
+body.theme-oled-black-sapphire { background-color: #000000; color: #e0e0e0; }
+body.theme-oled-black-sapphire .sidebar { background-color: #050505; border-right: 1px solid #00002a; } /* Dark Blue tint */
+body.theme-oled-black-sapphire .avatar-placeholder { background: linear-gradient(135deg, #000018, #000008); border: 3px solid #000055; color: #4444ff; } /* Blue accent */
+body.theme-oled-black-sapphire #yuiAvatarInitials { color: #6666ff; }
+body.theme-oled-black-sapphire .profile-preview h2 { color: #8888ff; }
+body.theme-oled-black-sapphire .profile-preview p { color: #6666cc; }
+body.theme-oled-black-sapphire .status-panel { background-color: #0a0a0a; border-color: #00003f; }
+body.theme-oled-black-sapphire .status-panel h3 { color: #3333ff; border-bottom-color: #000045; } /* Bright Blue */
+body.theme-oled-black-sapphire .status-panel p, body.theme-oled-black-sapphire .status-panel li { color: #c0c0c0; }
+body.theme-oled-black-sapphire .status-panel span { color: #d0d0d0; }
+body.theme-oled-black-sapphire .user-profile h4 { color: #3333ff; } /* Bright Blue */
+body.theme-oled-black-sapphire .emotion-panel { background-color: #0a0a0a; border-color: #00003f; }
+body.theme-oled-black-sapphire .emotion-panel h3 { color: #3333ff; border-bottom-color: #000045; }
+body.theme-oled-black-sapphire .emotion-face { color: #4444ff; }
+body.theme-oled-black-sapphire .sidebar nav button { color: #b0b0b0; background-color: transparent; border-left-color: #00002a; }
+body.theme-oled-black-sapphire .sidebar nav button.active, body.theme-oled-black-sapphire .sidebar nav button:hover { background-color: #00002a; color: #8888ff; border-left-color: #3333ff; } /* Blue active */
+body.theme-oled-black-sapphire .main-content { background-color: #000000; }
+body.theme-oled-black-sapphire .chat-header { background-color: #080808; border-bottom: 1px solid #00002a; color: #8888ff; }
+body.theme-oled-black-sapphire .chat-messages { background-color: #000000; }
+body.theme-oled-black-sapphire .yui-message { background-color: #101010; color: #d0d0d0; border: 1px solid #000030; }
+body.theme-oled-black-sapphire .user-message { background-color: #181818; color: #d0d0d0; border: 1px solid #000040; }
+body.theme-oled-black-sapphire .system-info { color: #6666cc; }
+body.theme-oled-black-sapphire .chat-input-area { background-color: #050505; border-top: 1px solid #00002a; }
+body.theme-oled-black-sapphire .chat-input-area input { background-color: #101010; color: #e0e0e0; border: 1px solid #000045; }
+body.theme-oled-black-sapphire .chat-input-area input:focus { border-color: #3333ff; box-shadow: 0 0 3px #3333ff; }
+body.theme-oled-black-sapphire .chat-input-area button { background-color: #000055; color: #aaaaff; border: 1px solid #000066; }
+body.theme-oled-black-sapphire .chat-input-area button:hover { background-color: #3333ff; color: #000; }
+body.theme-oled-black-sapphire #settingsView h1, body.theme-oled-black-sapphire #dashboardView h1 { color: #8888ff; border-bottom: 1px solid #000045; }
+body.theme-oled-black-sapphire .settings-section label { color: #6666cc; }
+body.theme-oled-black-sapphire .settings-section input[type="password"],
+body.theme-oled-black-sapphire .settings-section input[type="text"],
+body.theme-oled-black-sapphire .settings-section select { background-color: #101010; color: #e0e0e0; border: 1px solid #000045; }
+body.theme-oled-black-sapphire .settings-section input:focus,
+body.theme-oled-black-sapphire .settings-section select:focus { border-color: #3333ff; box-shadow: 0 0 3px #3333ff; }
+body.theme-oled-black-sapphire .primary-button { background-color: #000080; color: #ddddff; }
+body.theme-oled-black-sapphire .primary-button:hover { background-color: #3333ff; color: #000; }
+body.theme-oled-black-sapphire .danger-button { background-color: #0000cc; color: #ddddff; }
+body.theme-oled-black-sapphire .danger-button:hover { background-color: #4444ff; color: #fff; }
+body.theme-oled-black-sapphire #clearChatButton, body.theme-oled-black-sapphire #resetChatStateButton { background-color: #000044; color: #aaaaff; border-color: #000066; }
+body.theme-oled-black-sapphire #clearChatButton:hover, body.theme-oled-black-sapphire #resetChatStateButton:hover { background-color: #000066; color: #ddddff; }
+body.theme-oled-black-sapphire .message .timestamp { color: rgba(100, 100, 255, 0.6); }
+body.theme-oled-black-sapphire .settings-nav-button.active { border-bottom-color: #3333ff; color: #8888ff; }
+body.theme-oled-black-sapphire .settings-nav-button:hover { color: #aaaaff; }
+
+/* --- Theme: OLED Black - Amethyst --- */
+body.theme-oled-black-amethyst { background-color: #000000; color: #e0e0e0; }
+body.theme-oled-black-amethyst .sidebar { background-color: #050505; border-right: 1px solid #2a002a; } /* Dark Purple tint */
+body.theme-oled-black-amethyst .avatar-placeholder { background: linear-gradient(135deg, #180018, #080008); border: 3px solid #550055; color: #ff44ff; } /* Purple accent */
+body.theme-oled-black-amethyst #yuiAvatarInitials { color: #ff66ff; }
+body.theme-oled-black-amethyst .profile-preview h2 { color: #ff88ff; }
+body.theme-oled-black-amethyst .profile-preview p { color: #cc66cc; }
+body.theme-oled-black-amethyst .status-panel { background-color: #0a0a0a; border-color: #3f003f; }
+body.theme-oled-black-amethyst .status-panel h3 { color: #ff33ff; border-bottom-color: #450045; } /* Bright Purple */
+body.theme-oled-black-amethyst .status-panel p, body.theme-oled-black-amethyst .status-panel li { color: #c0c0c0; }
+body.theme-oled-black-amethyst .status-panel span { color: #d0d0d0; }
+body.theme-oled-black-amethyst .user-profile h4 { color: #ff33ff; } /* Bright Purple */
+body.theme-oled-black-amethyst .emotion-panel { background-color: #0a0a0a; border-color: #3f003f; }
+body.theme-oled-black-amethyst .emotion-panel h3 { color: #ff33ff; border-bottom-color: #450045; }
+body.theme-oled-black-amethyst .emotion-face { color: #ff44ff; }
+body.theme-oled-black-amethyst .sidebar nav button { color: #b0b0b0; background-color: transparent; border-left-color: #2a002a; }
+body.theme-oled-black-amethyst .sidebar nav button.active, body.theme-oled-black-amethyst .sidebar nav button:hover { background-color: #2a002a; color: #ff88ff; border-left-color: #ff33ff; } /* Purple active */
+body.theme-oled-black-amethyst .main-content { background-color: #000000; }
+body.theme-oled-black-amethyst .chat-header { background-color: #080808; border-bottom: 1px solid #2a002a; color: #ff88ff; }
+body.theme-oled-black-amethyst .chat-messages { background-color: #000000; }
+body.theme-oled-black-amethyst .yui-message { background-color: #101010; color: #d0d0d0; border: 1px solid #300030; }
+body.theme-oled-black-amethyst .user-message { background-color: #181818; color: #d0d0d0; border: 1px solid #400040; }
+body.theme-oled-black-amethyst .system-info { color: #cc66cc; }
+body.theme-oled-black-amethyst .chat-input-area { background-color: #050505; border-top: 1px solid #2a002a; }
+body.theme-oled-black-amethyst .chat-input-area input { background-color: #101010; color: #e0e0e0; border: 1px solid #450045; }
+body.theme-oled-black-amethyst .chat-input-area input:focus { border-color: #ff33ff; box-shadow: 0 0 3px #ff33ff; }
+body.theme-oled-black-amethyst .chat-input-area button { background-color: #550055; color: #ffaaff; border: 1px solid #660066; }
+body.theme-oled-black-amethyst .chat-input-area button:hover { background-color: #ff33ff; color: #000; }
+body.theme-oled-black-amethyst #settingsView h1, body.theme-oled-black-amethyst #dashboardView h1 { color: #ff88ff; border-bottom: 1px solid #450045; }
+body.theme-oled-black-amethyst .settings-section label { color: #cc66cc; }
+body.theme-oled-black-amethyst .settings-section input[type="password"],
+body.theme-oled-black-amethyst .settings-section input[type="text"],
+body.theme-oled-black-amethyst .settings-section select { background-color: #101010; color: #e0e0e0; border: 1px solid #450045; }
+body.theme-oled-black-amethyst .settings-section input:focus,
+body.theme-oled-black-amethyst .settings-section select:focus { border-color: #ff33ff; box-shadow: 0 0 3px #ff33ff; }
+body.theme-oled-black-amethyst .primary-button { background-color: #800080; color: #ffddff; }
+body.theme-oled-black-amethyst .primary-button:hover { background-color: #ff33ff; color: #000; }
+body.theme-oled-black-amethyst .danger-button { background-color: #cc00cc; color: #ffddff; }
+body.theme-oled-black-amethyst .danger-button:hover { background-color: #ff44ff; color: #fff; }
+body.theme-oled-black-amethyst #clearChatButton, body.theme-oled-black-amethyst #resetChatStateButton { background-color: #440044; color: #ffaaff; border-color: #660066; }
+body.theme-oled-black-amethyst #clearChatButton:hover, body.theme-oled-black-amethyst #resetChatStateButton:hover { background-color: #660066; color: #ffddff; }
+body.theme-oled-black-amethyst .message .timestamp { color: rgba(255, 100, 255, 0.6); }
+body.theme-oled-black-amethyst .settings-nav-button.active { border-bottom-color: #ff33ff; color: #ff88ff; }
+body.theme-oled-black-amethyst .settings-nav-button:hover { color: #ffaaff; }
 
 /* Chart.js Global Font Color (applied via JS for dynamic theme changes) */
 /* Chart.defaults.color = '#ccc'; // Default for dark themes */
@@ -1043,8 +1699,6 @@ body.theme-cyberpunk-dream .primary-button:hover {
     color: #0d0221;
     box-shadow: 0 0 10px #ff00ff;
 }
-
-/* ...existing styles... */
 
 .settings-nav {
     display: flex;

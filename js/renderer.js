@@ -16,6 +16,28 @@ const DEFAULT_YUI_PERSONA = {
     // customSystemPrompt will be null for default, causing getYuiSystemPrompt to use its internal default logic
 };
 
+// ADDED: Default state for chat-related dynamic properties
+const DEFAULT_CHAT_STATE = {
+    trustLevel: 0,
+    affectionLevel: 0,
+    friendshipStage: "Stranger",
+    shynessLevel: 70,
+    opennessToTopics: { personal: 20, hobbies: 40, deepThoughts: 10, futurePlans: 30, vulnerability: 15 },
+    sarcasmLevel: 60,
+    playfulnessLevel: 30,
+    patienceLevel: 50,
+    memory: [], // Short-term conversation history
+    keyEvents: [], // Events related to relationship progression
+    affectionHistory: [],
+    trustHistory: [],
+    lastInteractionTimestamp: null,
+    sentimentHistory: [],
+    // maxSentimentHistory is a config, not state to reset here
+    lastProactiveTimestamp: null
+    // User preferences (food, color, game, anime) are NOT reset by this action.
+    // Persona details (characterName, userName, age, occupation, backgroundSummary, customSystemPrompt) are NOT reset by this action.
+};
+
 // --- Global State ---
 let yuiData = {
     characterName: "Yui",
@@ -88,6 +110,7 @@ const userPrefColor = document.getElementById('userPrefColor');
 const userPrefGame = document.getElementById('userPrefGame');
 const userPrefAnime = document.getElementById('userPrefAnime');
 const clearChatButton = document.getElementById('clearChatButton');
+const resetChatStateButton = document.getElementById('resetChatStateButton'); // ADDED
 const totalInteractionsDisplay = document.getElementById('totalInteractionsDisplay');
 const relationshipMilestonesList = document.getElementById('relationshipMilestonesList');
 const userSentimentOverview = document.getElementById('userSentimentOverview');
@@ -488,6 +511,11 @@ function setupEventListeners() {
         displayMessage("Chat display cleared.", 'system-info', 'system-info');
     });
 
+    // ADDED: Event listener for the new reset chat state button
+    if (resetChatStateButton) {
+        resetChatStateButton.addEventListener('click', handleResetChatAndMemory);
+    }
+
     // Add window resize handler
     window.addEventListener('resize', handleWindowResize);
 }
@@ -639,6 +667,85 @@ function renderMemory() {
     // and no "thinking" indicator is present, consider if a proactive action is due.
     // This logic might be better placed after Yui's response or on app load.
     // For now, just rendering.
+}
+
+// ADDED: Function to handle resetting chat and Yui's interaction memory
+async function handleResetChatAndMemory() {
+    const confirmed = confirm("Are you sure you want to reset Yui's memory of your interactions and start fresh? This includes chat history, trust, affection, and learned personality traits. Your persona settings and saved user preferences will be kept.");
+    if (!confirmed) {
+        log.info("Renderer: Chat and memory reset cancelled by user.");
+        return;
+    }
+
+    log.info("Renderer: Initiating reset of chat and Yui's interaction memories.");
+    isProcessingMessage = true; // Prevent other actions
+    sendMessageButton.disabled = true;
+    userInput.disabled = true;
+
+    try {
+        // 1. Clear short-term memory (yuiData.memory)
+        yuiData.memory = [];
+
+        // 2. Clear long-term memories via memoryManager
+        if (window.memoryManager && typeof window.memoryManager.clearAllMemories === 'function') {
+            window.memoryManager.clearAllMemories(); // This also saves the cleared state for MM's localStorage
+            log.info("Renderer: Cleared long-term memories via memoryManager.");
+        } else {
+            log.warn("Renderer: memoryManager.clearAllMemories function not found.");
+        }
+
+        // 3. Reset yuiData dynamic fields to their defaults (preserving persona and user preferences)
+        yuiData.trustLevel = DEFAULT_CHAT_STATE.trustLevel;
+        yuiData.affectionLevel = DEFAULT_CHAT_STATE.affectionLevel;
+        yuiData.friendshipStage = DEFAULT_CHAT_STATE.friendshipStage;
+        yuiData.shynessLevel = DEFAULT_CHAT_STATE.shynessLevel;
+        // Deep copy for objects like opennessToTopics
+        yuiData.opennessToTopics = JSON.parse(JSON.stringify(DEFAULT_CHAT_STATE.opennessToTopics));
+        yuiData.sarcasmLevel = DEFAULT_CHAT_STATE.sarcasmLevel;
+        yuiData.playfulnessLevel = DEFAULT_CHAT_STATE.playfulnessLevel;
+        yuiData.patienceLevel = DEFAULT_CHAT_STATE.patienceLevel;
+        yuiData.keyEvents = [...DEFAULT_CHAT_STATE.keyEvents];
+        yuiData.affectionHistory = [...DEFAULT_CHAT_STATE.affectionHistory];
+        yuiData.trustHistory = [...DEFAULT_CHAT_STATE.trustHistory];
+        yuiData.lastInteractionTimestamp = DEFAULT_CHAT_STATE.lastInteractionTimestamp;
+        yuiData.sentimentHistory = [...DEFAULT_CHAT_STATE.sentimentHistory];
+        yuiData.lastProactiveTimestamp = DEFAULT_CHAT_STATE.lastProactiveTimestamp;
+        // Note: yuiData.userName, characterName, age, occupation, backgroundSummary, customSystemPrompt, userPreferences are NOT reset here.
+
+        // 4. Save the modified yuiData
+        await window.electronAPI.saveYuiData(yuiData);
+        log.info("Renderer: yuiData saved after chat and memory reset.");
+
+        // 5. Re-render chat display (will be empty now)
+        renderMemory();
+
+        // 6. Display initial greeting from Yui
+        displayInitialGreeting(); // This function should ideally fetch a fresh greeting
+
+        // 7. Update all relevant UI elements
+        updateYuiProfileDisplay();
+        updateYuiStatusPanel();
+        updateDashboardUIData(); // Update text-based dashboard elements
+        if (affectionChartInstance) affectionChartInstance.destroy();
+        if (trustChartInstance) trustChartInstance.destroy();
+        initializeCharts(); // Re-initialize charts with empty data
+        if (views.dashboard.classList.contains('active-view')) {
+            updateDashboard(); // Full update if dashboard is active
+        }
+
+
+        log.info("Renderer: Chat and memory reset complete. Initial greeting displayed.");
+        displayMessage("Yui's memory of your interactions has been reset. Your journey starts anew!", 'system-info');
+
+    } catch (error) {
+        log.error("Renderer: Error during chat and memory reset:", error);
+        displayMessage("An error occurred while resetting. Please check the logs.", 'system-info');
+    } finally {
+        isProcessingMessage = false;
+        sendMessageButton.disabled = false;
+        userInput.disabled = false;
+        userInput.focus();
+    }
 }
 
 async function handleUserMessage() {
