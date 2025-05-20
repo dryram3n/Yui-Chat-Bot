@@ -36,7 +36,6 @@ This project was developed to explore AI-driven character interaction, dynamic p
 *   **Frontend:** HTML, CSS
 *   **NLP (Natural Language Processing):** Compromise.js
 *   **Charting:** Chart.js
-*   **Build Tool:** Electron Forge
 *   **Logging:** Custom file-based logger
 
 ## Project Structure
@@ -59,7 +58,6 @@ A brief overview of key files and folders:
     *   `settings.json`: User settings like theme, API key, and resolution.
     *   `logs/app.log`: Application logs.
 *   `package.json`: Defines project metadata, dependencies, and scripts.
-*   `forge.config.js`: Configuration for Electron Forge (building and packaging).
 *   `launchChatBot.bat`: A batch file to easily start the application.
 
 ## Setup and Installation (for Development)
@@ -106,29 +104,14 @@ These instructions are for setting up the project in a development environment l
 
 To start the application in development mode:
 
-```bash
-npm start
-```
+1.  Ensure you have completed the "Installation Steps" above.
+2.  Double-click the `launchChatBot.bat` file located in the project's root directory.
 
-This command will launch the Electron application. Any changes you make to the frontend code should automatically reload the application. Changes to `main.js` might require a manual restart.
-
-### Building the Application (for Distribution)
-
-Electron Forge is used to package the application for different platforms.
-
-*   To package the application (creates distributables in the `out` folder without making an installer):
-    ```bash
-    npm run package
-    ```
-*   To make an installer for your current OS:
-    ```bash
-    npm run make
-    ```
-    This will create installers (e.g., `.exe` for Windows, `.dmg` for macOS, `.deb` for Debian-based Linux) in the `out/make` folder. Refer to `forge.config.js` for specific maker configurations.
+This will launch the Electron application. Any changes you make to the frontend code should automatically reload the application. Changes to `main.js` might require a manual restart of the application (close the window and run `launchChatBot.bat` again).
 
 ## Usage
 
-1.  **Launch the application:** Either by `npm start` (development) or by running the built executable.
+1.  **Launch the application:** Double-click the `launchChatBot.bat` file.
 2.  **Set API Key:** If it's your first time, go to `Settings`, enter your Gemini API Key, and save it. Also, set your desired user name.
 3.  **Chat:** Navigate to the `Chat` tab to start talking with Yui. Type your message and press Enter or click "Send".
 4.  **Dashboard:** Visit the `Dashboard` tab to see visualizations of Yui's affection and trust levels, and other key metrics.
