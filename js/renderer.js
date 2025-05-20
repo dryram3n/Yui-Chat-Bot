@@ -2445,7 +2445,7 @@ async function tryProactiveAction() {
         { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
         { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" },
     ];
-    const modelName = "gemini-1.5-flash-preview-0514"; // Or your preferred model
+    const modelName = "gemini-2.5-flash-preview-04-17"; // Or your preferred model
 
     try {
         const result = await window.electronAPI.callGemini({
