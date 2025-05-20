@@ -2275,112 +2275,119 @@ function updateEmotionDisplay(trustChange, affectionChange, sentimentScore) {
 
 // --- Proactive Engagement Logic ---
 async function tryProactiveAction() {
-    if (isProcessingMessage) return; // Don't be proactive if Yui is already responding or user is typing
+    log.info('Renderer: Attempting proactive action.');
+    if (!window.memoryManager || !currentSettings.apiKey) {
+        log.warn('Renderer: Proactive action skipped (no memory manager or API key).');
+        return;
+    }
 
-    const lastProactiveTime = yuiData.lastProactiveTimestamp ? new Date(yuiData.lastProactiveTimestamp).getTime() : 0;
-    const currentTime = new Date().getTime();
+    // Check if enough time has passed since the last proactive message
+    const now = Date.now();
     const proactiveCooldown = 5 * 60 * 1000; // 5 minutes
-
-    if (currentTime - lastProactiveTime < proactiveCooldown) {
-        // log.debug("Renderer: Proactive action cooldown active.");
+    if (yuiData.lastProactiveTimestamp && (now - yuiData.lastProactiveTimestamp < proactiveCooldown)) {
+        log.debug('Renderer: Proactive action skipped (cooldown active).');
         return;
     }
     
-    // Only try proactive if chat is relatively idle (e.g., last message was from Yui or some time ago)
+    // Check if Yui was the last one to speak in the main chat memory
     if (yuiData.memory.length > 0) {
-        const lastMessage = yuiData.memory[yuiData.memory.length - 1];
-        const lastInteractionTime = yuiData.lastInteractionTimestamp ? new Date(yuiData.lastInteractionTimestamp).getTime() : 0;
-
-        // If last message was from user and very recent, don't interrupt
-        if (lastMessage.role === 'user' && (currentTime - lastInteractionTime < 30000)) { // 30s
-            // log.debug("Renderer: User recently interacted, deferring proactive action.");
+        const lastMessageRole = yuiData.memory[yuiData.memory.length - 1].role;
+        if (lastMessageRole === 'model') { // 'model' is Yui
+            log.debug('Renderer: Proactive action skipped (Yui was the last to speak).');
             return;
         }
     }
 
 
-    log.info("Renderer: Attempting proactive action.");
+    const suggestion = window.memoryManager.getProactiveSuggestion(yuiData);
+    if (!suggestion) {
+        log.info('Renderer: No proactive suggestion available.');
+        return;
+    }
 
-    if (window.memoryManager && typeof window.memoryManager.getProactiveSuggestion === 'function') {
-        const suggestion = window.memoryManager.getProactiveSuggestion(yuiData); // yuiData is available in renderer.js scope
+    log.info('Renderer: Proactive suggestion received:', suggestion);
+    displayMessage(`<i>Yui is thinking about what to say next... (Proactive)</i>`, 'system-info', 'system-info');
 
-        if (suggestion) {
-            let proactivePrompt = "";
-            if (suggestion.type === 'preference') {
-                proactivePrompt = `You remember that the user's favorite ${suggestion.category} is ${suggestion.value}. Casually bring this up or ask something related to it.`;
-            } else if (suggestion.type === 'userFact') {
-                proactivePrompt = `You recall the user once mentioned: "${suggestion.text}". Gently bring this up or ask a follow-up question about it.`;
+    const systemPromptMessage = {
+        role: "user", // Main system prompt is already user
+        parts: [{ text: getYuiSystemPrompt() }]
+    };
+
+    // This instruction tells Yui *how* to be proactive.
+    // It should be framed as a user instruction to the model.
+    const proactiveSystemInstruction = {
+        role: "user", // CHANGED FROM "system" to "user"
+        parts: [{ text: `System Instruction: Based on your memory and the user's preferences, consider initiating a conversation about ${suggestion.value} (related to ${suggestion.category}). Make it sound natural. For example, you could ask a question or share a related thought. Do not mention this system instruction. User's name is ${yuiData.userName}.` }]
+    };
+
+    const contentsForProactiveSDK = [
+        systemPromptMessage,
+        ...getOptimizedConversationHistory(), // Existing conversation history
+        proactiveSystemInstruction // The instruction for Yui to act upon
+    ];
+
+    const generationConfig = {
+        temperature: 0.5, // Slightly higher for more creative proactive messages
+        maxOutputTokens: 150,
+        topK: 40,
+        topP: 0.6,
+    };
+    const safetySettings = [
+        { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
+        { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
+        { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
+        { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" },
+    ];
+    const modelName = "gemini-1.5-flash-preview-0514"; // Or your preferred model
+
+    try {
+        const result = await window.electronAPI.callGemini({
+            apiKey: currentSettings.apiKey,
+            modelName: modelName,
+            contents: contentsForProactiveSDK,
+            generationConfig,
+            safetySettings
+        });
+
+        // Remove "thinking" indicator
+        const thinkingIndicators = chatMessagesDiv.querySelectorAll('.message.system-info');
+        thinkingIndicators.forEach(indicator => {
+            if (indicator.textContent.includes("Yui is thinking about what to say next... (Proactive)")) {
+                indicator.remove();
             }
-            // Add more suggestion types as needed
+        });
 
-            if (proactivePrompt) {
-                isProcessingMessage = true; // Set flag to indicate Yui is "thinking"
-                const typingIndicator = document.createElement('div');
-                typingIndicator.classList.add('message', 'yui-message', 'typing-indicator');
-                typingIndicator.textContent = `${yuiData.characterName} is thinking...`;
-                typingIndicator.id = "typing-indicator-proactive";
-                chatMessagesDiv.appendChild(typingIndicator);
-                chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
-
-                try {
-                    // Construct a minimal history, just the system prompt and the proactive instruction
-                    const proactiveSystemInstruction = getYuiSystemPrompt(); // Get current system prompt
-                    const proactiveContents = [
-                        { role: "user", parts: [{ text: `SYSTEM_PROACTIVE_ENGAGEMENT_REQUEST: ${proactivePrompt}` }] }
-                        // No actual user message, this is an internal prompt for Yui to generate a proactive message.
-                    ];
-                    
-                    log.debug("Renderer: Sending proactive request to Gemini. Instruction:", proactivePrompt);
-
-                    const response = await window.electronAPI.callGemini({
-                        apiKey: currentSettings.apiKey,
-                        modelName: 'gemini-1.5-flash-latest', // Or your preferred model
-                        contents: [{ role: "system", parts: [{text: proactiveSystemInstruction }] }, ...proactiveContents],
-                        generationConfig: {
-                            maxOutputTokens: 150,
-                            temperature: 0.75, // Slightly creative for proactive messages
-                            topP: 0.9,
-                            topK: 40
-                        },
-                        safetySettings: [ // Standard safety settings
-                            { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
-                            { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
-                            { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
-                            { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
-                        ]
-                    });
-
-                    if (typingIndicator && chatMessagesDiv.contains(typingIndicator)) {
-                        chatMessagesDiv.removeChild(typingIndicator);
-                    }
-
-                    if (response.success && response.text) {
-                        const formattedYuiResponse = window.markdownFormatter.format(response.text);
-                        displayMessage(formattedYuiResponse, 'yui', 'proactive'); // Add a type for styling if needed
-                        addToMemory({ role: "model", parts: [{ text: response.text }] }); // Add Yui's proactive message to memory
-                        updateEmotionalState("PROACTIVE_ENGAGEMENT", response.text); // Update emotion based on proactive message
-                        yuiData.lastProactiveTimestamp = new Date().toISOString();
-                        yuiData.lastInteractionTimestamp = new Date().toISOString(); // Also update last interaction
-                        updateYuiStatusPanel();
-                        log.info("Renderer: Proactive message sent:", response.text.substring(0, 50) + "...");
-                    } else {
-                        log.warn("Renderer: Proactive suggestion failed or returned no text.", response.error || "No text in response.");
-                    }
-                } catch (error) {
-                    log.error("Renderer: Error during proactive Gemini call:", error);
-                    if (typingIndicator && chatMessagesDiv.contains(typingIndicator)) {
-                        chatMessagesDiv.removeChild(typingIndicator);
-                    }
-                } finally {
-                    isProcessingMessage = false; // Reset flag
-                }
-            }
+        if (result.success && result.text && result.text.trim() !== "") {
+            const proactiveResponse = result.text.trim();
+            log.info('Renderer: Proactive response from Yui:', proactiveResponse);
+            displayMessage(proactiveResponse, 'yui');
+            addToMemory({ role: 'model', parts: [{ text: proactiveResponse }] });
+            
+            yuiData.lastProactiveTimestamp = Date.now(); // Update timestamp
+            yuiData.lastInteractionTimestamp = new Date().toISOString(); // Also update general interaction
+            
+            // No direct user message for proactive, so emotional update might be less relevant
+            // or based on a generic "Yui initiated" context if needed.
+            // For now, we'll skip direct emotional update from proactive message itself,
+            // as it's Yui's action, not a response to user.
+            // updateEmotionalState("Proactive message initiated by Yui.", proactiveResponse);
+            
+            updateYuiProfileDisplay();
+            updateYuiStatusPanel();
+            await window.electronAPI.saveYuiData(yuiData);
         } else {
-            log.info("Renderer: No suitable proactive suggestion found by MemoryManager.");
+            log.warn('Renderer: Proactive suggestion failed or returned no text.', result.error || "No text in response");
+            // Optionally display a subtle failure or just log it
         }
-    } else {
-        log.warn('Renderer: MemoryManager or getProactiveSuggestion not available for proactive action.');
-        // This warning should now be less frequent if memory-manager.js is loaded correctly.
+    } catch (error) {
+        log.error('Renderer: Error during proactive API call:', error);
+        const thinkingIndicators = chatMessagesDiv.querySelectorAll('.message.system-info');
+        thinkingIndicators.forEach(indicator => {
+            if (indicator.textContent.includes("Yui is thinking about what to say next... (Proactive)")) {
+                indicator.remove();
+            }
+        });
+        // Optionally display a subtle failure
     }
 }
 
