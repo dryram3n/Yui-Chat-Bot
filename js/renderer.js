@@ -83,6 +83,7 @@ let currentSettings = {
 // --- DOM Elements ---
 const chatMessagesDiv = document.getElementById('chatMessages');
 const userInput = document.getElementById('userInput');
+const userInputMirror = document.getElementById('userInputMirror'); // ADDED
 const sendMessageButton = document.getElementById('sendMessageButton');
 const themeSelector = document.getElementById('themeSelector');
 const resolutionSelector = document.getElementById('resolutionSelector');
@@ -153,6 +154,7 @@ const userPrefAnimeInput = document.getElementById('userPrefAnimeInput');
 
 let affectionChartInstance, trustChartInstance;
 let isProcessingMessage = false; // ADDED: Flag to prevent double message sending
+let typoObject = null; // ADDED for Typo.js
 
 // Use the globally loaded NLP library
 const nlp = window.nlp;
@@ -320,6 +322,7 @@ function setupEventListeners() {
             handleUserMessage();
         }
     });
+    userInput.addEventListener('input', handleSpellingCheck); // ADDED for spell check
 
     themeSelector.addEventListener('change', (e) => {
         currentSettings.theme = e.target.value;
@@ -781,6 +784,8 @@ async function handleUserMessage() {
         // DO NOT add to memory here. It will be added after Yui's response.
         // addToMemory({ role: "user", parts: [{ text: messageText }] }); // MOVED
         userInput.value = '';
+        userInputMirror.innerHTML = ''; // ADDED: Clear mirror
+        userInput.style.borderColor = ''; // ADDED: Reset border color
         // processUserIntent can run here as it affects the system prompt for the current call
         processUserIntent(messageText);        
         
@@ -2495,6 +2500,65 @@ async function tryProactiveAction() {
             }
         });
         // Optionally display a subtle failure
+    }
+}
+
+// ADDED: Function to initialize Typo.js
+async function initializeSpellChecker() {
+    log.info('Renderer: Initializing spell checker...');
+    try {
+        const dictionaryPath = 'js/lib/typo/'; // Relative to index.html
+
+        const affFileResponse = await fetch(dictionaryPath + 'en_US.aff');
+        if (!affFileResponse.ok) throw new Error(`Failed to load en_US.aff: ${affFileResponse.statusText}`);
+        const affData = await affFileResponse.text();
+
+        const dicFileResponse = await fetch(dictionaryPath + 'en_US.dic');
+        if (!dicFileResponse.ok) throw new Error(`Failed to load en_US.dic: ${dicFileResponse.statusText}`);
+        const dicData = await dicFileResponse.text();
+
+        // Typo constructor: new Typo(dictionaryLanguageCode, affFileContents, dicFileContents, settings)
+        typoObject = new Typo("en_US", affData, dicData);
+        log.info('Renderer: Spell checker initialized successfully with en_US dictionary.');
+        return true;
+    } catch (error) {
+        log.error('Renderer: Failed to initialize spell checker:', error);
+        typoObject = null;
+        return false;
+    }
+}
+
+// ADDED: New function to handle spelling check and update the mirror
+function handleSpellingCheck() {
+    if (!typoObject) {
+        userInputMirror.innerHTML = userInput.value; // Just mirror if no spellchecker
+        return;
+    }
+
+    const text = userInput.value;
+    let currentHtml = "";
+
+    // Split text by words and non-words (spaces, punctuation) to preserve them
+    const parts = text.split(/(\b[a-zA-Z']+\b)/); // Regex to better handle words with apostrophes
+
+    for (const part of parts) {
+        if (/\b[a-zA-Z']+\b/.test(part)) { // It's a word
+            if (part.length > 0 && !typoObject.check(part)) {
+                currentHtml += `<span class="misspelled-word-segment">${part}</span>`;
+            } else {
+                currentHtml += part;
+            }
+        } else { // It's punctuation, space, or empty string from split
+            currentHtml += part;
+        }
+    }
+    userInputMirror.innerHTML = currentHtml;
+
+    // Optional: visual cue on the input border itself
+    if (userInputMirror.querySelector('.misspelled-word-segment')) {
+        userInput.style.setProperty('border-color', 'red', 'important'); // Use !important if other styles override
+    } else {
+        userInput.style.borderColor = ''; // Reset to default or theme-based
     }
 }
 

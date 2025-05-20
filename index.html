@@ -61,6 +61,7 @@
                     <!-- Messages will appear here -->
                 </div>
                 <div class="chat-input-area">
+                    <div id="userInputMirror" class="input-mirror" aria-hidden="true"></div>
                     <input type="text" id="userInput" placeholder="Say something...">
                     <button id="sendMessageButton">Send</button>
                 </div>
@@ -220,7 +221,8 @@
     <!-- Use jsDelivr instead of unpkg for better reliability -->
     <script src="https://cdn.jsdelivr.net/npm/compromise@14.14.4/builds/compromise.min.js"></script>
     <script src="js/markdown-formatter.js"></script>
-    <script src="js/memory-manager.js"></script> <!-- ADD THIS LINE -->
+    <script src="js/memory-manager.js"></script>
+    <script src="js/lib/typo/typo.js"></script> <!-- ADD Typo.js -->
     <script src="js/renderer.js"></script>
 </body>
 </html>

@@ -428,10 +428,65 @@ body.theme-green-leaf-vibes .emotion-face {
 
 
 .chat-input-area {
-    display: flex;
-    padding: 15px 20px; /* MODIFIED */
-    border-top: 1px solid #303035;
-    background-color: #25252c;
+    position: relative; /* For positioning the mirror */
+    display: flex; /* Align input and button */
+    align-items: center;
+    padding: 5px;
+    background-color: var(--input-background-color, #2c2c2c); /* Match theme or default */
+    border-radius: 4px;
+}
+
+#userInputMirror {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%; /* Cover the area of the input field */
+    height: 100%;
+    padding: 12px 10px; /* MODIFIED: Increased vertical padding */
+    border: 1px solid transparent; /* Align with input, but border is on input */
+    border-radius: 4px; /* Match input */
+    white-space: pre-wrap; /* Allow text to wrap like in an input */
+    word-wrap: break-word;
+    z-index: 1; /* Behind the actual input */
+    pointer-events: none; /* Allow clicks to pass through to the input */
+    color: var(--text-color, #ccc); /* Default text color for the mirror */
+    font-family: inherit;
+    font-size: inherit;
+    line-height: inherit; /* Consider adjusting if needed, e.g., line-height: 1.4; */
+    box-sizing: border-box; /* Ensure padding is included in width/height */
+}
+
+#userInput {
+    flex-grow: 1;
+    padding: 12px 10px; /* MODIFIED: Increased vertical padding */
+    border: 1px solid var(--border-color, #555);
+    border-radius: 4px;
+    background-color: transparent; /* Input itself is transparent */
+    color: transparent; /* Text color is transparent, caret will still be visible */
+    caret-color: var(--text-color, #ccc); /* Make caret visible, match theme */
+    position: relative;
+    z-index: 2; /* Above the mirror */
+    font-family: inherit; /* Ensure font consistency */
+    font-size: inherit;
+    line-height: inherit; /* Consider adjusting if needed, e.g., line-height: 1.4; */
+    outline: none; /* Remove default focus outline if you handle it via border */
+    box-sizing: border-box; /* ADDED: for consistent sizing */
+}
+
+#userInput:focus {
+    border-color: var(--accent-color, #007bff); /* Highlight focus */
+}
+
+.misspelled-word-segment {
+    text-decoration: red wavy underline;
+    background-color: transparent; /* Ensure no background overrides */
+}
+
+/* Adjust sendMessageButton if necessary */
+#sendMessageButton {
+    margin-left: 5px;
+    padding: 10px 15px; /* Ensure button padding is appropriate for new input height */
+    /* You might need to adjust button padding or use align-self if it looks misaligned */
 }
 
 .chat-input-area input {
